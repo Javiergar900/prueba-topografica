@@ -3,14 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chascomús - Ciclovías y Caminos Rurales (CyclOSM)</title>
+    <title>Chascomús Rural App</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+      }
+    </script>
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        body { margin: 0; padding: 0; }
-        #map { height: 100vh; width: 100%; background: #f0f0f0; }
-        .leaflet-control-layers { font-size: 14px; font-weight: bold; }
+        body { margin: 0; padding: 0; font-family: sans-serif; }
+        #map { height: 100vh; width: 100%; background: #e0e0e0; }
+        
+        /* Ajuste para que el selector de capas se vea bien en el celu */
+        .leaflet-control-layers {
+            font-size: 14px !important;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2) !important;
+            border: none !important;
+        }
     </style>
 </head>
 <body>
@@ -20,44 +35,68 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
+        // Ubicación central: Chascomús
         const chascomusCoord = [-35.5762, -58.0104];
 
-        // --- CAPA CYCLOSM (SERVIDOR FR) ---
-        // Este servidor suele ser más permisivo para archivos locales .html
+        // --- DEFINICIÓN DE CAPAS ---
+
+        // 1. CyclOSM (La que querías: Caminos rurales y bici con mucho detalle)
         const cyclOSM = L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
             maxZoom: 20,
-            attribution: '© CyclOSM | Map data: © OpenStreetMap contributors'
+            attribution: '© CyclOSM | OSM contributors'
         });
 
-        // Capa Topográfica de respaldo (ESRI)
-        const esriTopo = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Esri World Topo'
-        });
-
-        // Capa de Relieve de respaldo (Google)
+        // 2. Google Terrain (Relieve sombreado)
         const googleTerrain = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
             maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'],
             attribution: 'Google Terrain'
         });
 
-        // --- INICIALIZACIÓN ---
+        // 3. ESRI Satélite Híbrido (Foto real + nombres de calles)
+        const esriHybrid = L.layerGroup([
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}')
+        ]);
+
+        // 4. ESRI Topo (Mapa técnico profesional)
+        const esriTopo = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Esri World Topo'
+        });
+
+        // --- INICIALIZACIÓN DEL MAPA ---
+
         const map = L.map('map', {
             center: chascomusCoord,
             zoom: 14,
-            layers: [cyclOSM] // CyclOSM como capa base por defecto
+            layers: [cyclOSM] // Arranca con CyclOSM por defecto
         });
 
+        // --- CONTROLES Y HERRAMIENTAS ---
+
         const baseMaps = {
-            "CyclOSM (Caminos y Bicis)": cyclOSM,
+            "CyclOSM (Rural Detalle)": cyclOSM,
             "Google Relieve": googleTerrain,
-            "ESRI Topográfico": esriTopo
+            "Satélite Híbrido HD": esriHybrid,
+            "Topográfico ESRI": esriTopo
         };
 
+        // Selector de capas abierto para facilitar el uso en el celu
         L.control.layers(baseMaps, null, { collapsed: false }).addTo(map);
+
+        // Escala métrica (Clave para geoprocesamiento)
         L.control.scale({metric: true, imperial: false}).addTo(map);
 
-        // Marcador en la Laguna
-        L.marker(chascomusCoord).addTo(map).bindPopup("<b>Chascomús</b><br>Detalle de caminos rurales.");
+        // Herramienta de coordenadas por clic (Para tus informes de seguridad)
+        map.on('click', function(e) {
+            const coord = e.latlng;
+            L.popup()
+                .setLatLng(coord)
+                .setContent("<b>Coordenadas GPS:</b><br>Lat: " + coord.lat.toFixed(6) + "<br>Lon: " + coord.lng.toFixed(6))
+                .openOn(map);
+        });
+
+        // Marcador de referencia
+        L.marker(chascomusCoord).addTo(map).bindPopup("<b>Centro de Chascomús</b>");
 
     </script>
 </body>
