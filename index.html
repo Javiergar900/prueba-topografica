@@ -74,10 +74,8 @@
         // --- CONTROLES Y HERRAMIENTAS ---
 
         const baseMaps = {
-            "CyclOSM (Rural Detalle)": cyclOSM,
-            "Google Relieve": googleTerrain,
-            "Satélite Híbrido HD": esriHybrid,
-            "Topográfico ESRI": esriTopo
+            "Mapa 1 ": cyclOSM,
+            "Mapa 2 (Topográfico)": esriTopo
         };
 
         // Selector de capas abierto para facilitar el uso en el celu
@@ -95,8 +93,6 @@
                 .openOn(map);
         });
 
-        // Marcador de referencia
-        L.marker(chascomusCoord).addTo(map).bindPopup("<b>Centro de Chascomús</b>");
 
     </script>
 </body>
