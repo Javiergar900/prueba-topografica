@@ -2,97 +2,146 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chascomús Rural App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chascomús Rural - Seguridad</title>
     
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2c3e50">
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-      }
-    </script>
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        body { margin: 0; padding: 0; font-family: sans-serif; }
-        #map { height: 100vh; width: 100%; background: #e0e0e0; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        #map { height: 100vh; width: 100%; }
         
-        /* Ajuste para que el selector de capas se vea bien en el celu */
-        .leaflet-control-layers {
-            font-size: 14px !important;
+        /* Estilos del formulario móvil */
+        .form-container {
+            padding: 10px;
+            min-width: 200px;
+        }
+        .form-container label {
+            display: block;
             font-weight: bold;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2) !important;
-            border: none !important;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+        .form-container input, .form-container select, .form-container textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Importante para móviles */
+            font-size: 16px; /* Evita zoom automático en iOS */
+        }
+        .btn-save {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            margin-top: 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Ajuste visual del popup */
+        .leaflet-popup-content-wrapper { border-radius: 8px; }
+
+        /* Botón de Ayuda/Instrucción flotante */
+        .info-floating {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
+    <div class="info-floating">Toca el mapa para registrar un evento</div>
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Ubicación central: Chascomús
         const chascomusCoord = [-35.5762, -58.0104];
 
-        // --- DEFINICIÓN DE CAPAS ---
-
-        // 1. CyclOSM (La que querías: Caminos rurales y bici con mucho detalle)
+        // --- CAPAS ---
         const cyclOSM = L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
-            maxZoom: 20,
-            attribution: '© CyclOSM | OSM contributors'
+            maxZoom: 20, attribution: '© CyclOSM'
         });
-
-        // 2. Google Terrain (Relieve sombreado)
-        const googleTerrain = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
-            maxZoom: 20, subdomains:['mt0','mt1','mt2','mt3'],
-            attribution: 'Google Terrain'
-        });
-
-        // 3. ESRI Satélite Híbrido (Foto real + nombres de calles)
-        const esriHybrid = L.layerGroup([
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}')
-        ]);
-
-        // 4. ESRI Topo (Mapa técnico profesional)
         const esriTopo = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Esri World Topo'
+            attribution: 'Esri Topo'
         });
-
-        // --- INICIALIZACIÓN DEL MAPA ---
 
         const map = L.map('map', {
             center: chascomusCoord,
             zoom: 14,
-            layers: [cyclOSM] // Arranca con CyclOSM por defecto
+            layers: [cyclOSM],
+            zoomControl: false // Lo quitamos para ganar espacio o moverlo
         });
+        
+        L.control.zoom({ position: 'topright' }).addTo(map);
 
-        // --- CONTROLES Y HERRAMIENTAS ---
+        const baseMaps = { "Rural/Ciclistas": cyclOSM, "Topográfico": esriTopo };
+        L.control.layers(baseMaps, null, { collapsed: true }).addTo(map);
 
-        const baseMaps = {
-            "Mapa 1 ": cyclOSM,
-            "Mapa 2 (Topográfico)": esriTopo
-        };
+        // --- LÓGICA DE CARGA DE EVENTOS ---
 
-        // Selector de capas abierto para facilitar el uso en el celu
-        L.control.layers(baseMaps, null, { collapsed: false }).addTo(map);
+        function saveEvent(lat, lng) {
+            const tipo = document.getElementById('tipo').value;
+            const obs = document.getElementById('obs').value;
+            const hora = document.getElementById('hora').value;
 
-        // Escala métrica (Clave para geoprocesamiento)
-        L.control.scale({metric: true, imperial: false}).addTo(map);
+            // Aquí podrías enviar los datos a una base de datos o Firebase
+            // Por ahora, solo creamos un marcador permanente
+            const marker = L.marker([lat, lng]).addTo(map);
+            marker.bindPopup(`
+                <b>${tipo}</b><br>
+                <small>${hora}</small><hr>
+                ${obs}
+            `).openPopup();
+            
+            map.closePopup();
+        }
 
-        // Herramienta de coordenadas por clic (Para tus informes de seguridad)
         map.on('click', function(e) {
-            const coord = e.latlng;
+            const { lat, lng } = e.latlng;
+            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+
+            const formHtml = `
+                <div class="form-container">
+                    <h3 style="margin:0; color:#2c3e50;">Nuevo Reporte</h3>
+                    <label>Tipología</label>
+                    <select id="tipo">
+                        <option value="Robo/Hurto">Robo/Hurto</option>
+                        <option value="Presencia Sospechosa">Presencia Sospechosa</option>
+                        <option value="Abigeato">Abigeato (Ganado)</option>
+                        <option value="Vandalismo">Vandalismo</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+
+                    <label>Hora del evento</label>
+                    <input type="time" id="hora" value="${now}">
+
+                    <label>Observaciones</label>
+                    <textarea id="obs" rows="3" placeholder="Descripción..."></textarea>
+
+                    <button class="btn-save" onclick="saveEvent(${lat}, ${lng})">GUARDAR EVENTO</button>
+                </div>
+            `;
+
             L.popup()
-                .setLatLng(coord)
-                .setContent("<b>Coordenadas GPS:</b><br>Lat: " + coord.lat.toFixed(6) + "<br>Lon: " + coord.lng.toFixed(6))
+                .setLatLng([lat, lng])
+                .setContent(formHtml)
                 .openOn(map);
         });
-
 
     </script>
 </body>
