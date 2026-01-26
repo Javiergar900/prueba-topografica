@@ -140,8 +140,6 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Biblioteca para parsear KML a GeoJSON -->
-    <script src="https://unpkg.com/@tmcw/togeojson/dist/togeojson.js"></script>
 
     <script>
         'use strict';
@@ -171,141 +169,207 @@
         let kmlLayer = L.layerGroup();
         const markers = L.layerGroup().addTo(map);
         
-        // --- FUNCIÓN PARA CARGAR KML SIN PROXY ---
-        function loadKMLDirectly(url) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    console.log('Intentando cargar KML directamente desde:', url);
-                    
-                    // Intentar con fetch directo (funciona si el servidor permite CORS)
-                    const response = await fetch(url, {
-                        method: 'GET',
-                        mode: 'cors',
-                        headers: {
-                            'Accept': 'application/xml, text/xml, */*'
+        // --- FUNCIÓN SIMPLIFICADA PARA PARSEAR KML ---
+        function parseKML(kmlText) {
+            console.log('Parseando KML...');
+            const parser = new DOMParser();
+            const kmlDoc = parser.parseFromString(kmlText, 'text/xml');
+            
+            // Buscar todos los polígonos
+            const polygons = [];
+            const placemarks = kmlDoc.getElementsByTagName('Placemark');
+            
+            console.log('Encontrados', placemarks.length, 'placemarks');
+            
+            for (let i = 0; i < placemarks.length; i++) {
+                const placemark = placemarks[i];
+                
+                // Obtener nombre
+                let name = `Circunscripción ${i + 1}`;
+                const nameElements = placemark.getElementsByTagName('name');
+                if (nameElements.length > 0) {
+                    name = nameElements[0].textContent;
+                }
+                
+                // Buscar coordenadas en Polygon
+                const polygonsElements = placemark.getElementsByTagName('Polygon');
+                for (let polyElement of polygonsElements) {
+                    const coordElements = polyElement.getElementsByTagName('coordinates');
+                    for (let coordElement of coordElements) {
+                        const coordsText = coordElement.textContent.trim();
+                        const coordsArray = parseCoordinates(coordsText);
+                        
+                        if (coordsArray.length > 2) {
+                            polygons.push({
+                                name: name,
+                                coordinates: coordsArray
+                            });
                         }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`Error HTTP: ${response.status}`);
-                    }
-                    
-                    const kmlText = await response.text();
-                    console.log('KML descargado exitosamente, tamaño:', kmlText.length, 'bytes');
-                    
-                    // Parsear el KML usando toGeoJSON
-                    const parser = new DOMParser();
-                    const kmlDoc = parser.parseFromString(kmlText, 'text/xml');
-                    
-                    // Convertir KML a GeoJSON
-                    const geojson = toGeoJSON.kml(kmlDoc);
-                    
-                    console.log('KML convertido a GeoJSON:', geojson);
-                    console.log('Número de features:', geojson.features ? geojson.features.length : 0);
-                    
-                    resolve(geojson);
-                    
-                } catch (error) {
-                    console.warn('Error con fetch directo:', error.message);
-                    
-                    // Método alternativo: usar XMLHttpRequest
-                    try {
-                        console.log('Intentando método alternativo con XMLHttpRequest...');
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('GET', url, true);
-                        xhr.onload = function() {
-                            if (xhr.status === 200) {
-                                const kmlText = xhr.responseText;
-                                const parser = new DOMParser();
-                                const kmlDoc = parser.parseFromString(kmlText, 'text/xml');
-                                const geojson = toGeoJSON.kml(kmlDoc);
-                                resolve(geojson);
-                            } else {
-                                reject(new Error(`XMLHttpRequest error: ${xhr.status}`));
-                            }
-                        };
-                        xhr.onerror = function() {
-                            reject(new Error('Network error con XMLHttpRequest'));
-                        };
-                        xhr.send();
-                    } catch (xhrError) {
-                        reject(xhrError);
                     }
                 }
-            });
+                
+                // Buscar también en LineString (por si acaso)
+                const linesElements = placemark.getElementsByTagName('LineString');
+                for (let lineElement of linesElements) {
+                    const coordElements = lineElement.getElementsByTagName('coordinates');
+                    for (let coordElement of coordElements) {
+                        const coordsText = coordElement.textContent.trim();
+                        const coordsArray = parseCoordinates(coordsText);
+                        
+                        if (coordsArray.length > 1) {
+                            polygons.push({
+                                name: name,
+                                coordinates: coordsArray,
+                                isLine: true
+                            });
+                        }
+                    }
+                }
+            }
+            
+            console.log('Polígonos parseados:', polygons.length);
+            return polygons;
         }
         
-        // --- CARGAR Y MOSTRAR KML ---
+        // Función auxiliar para parsear coordenadas
+        function parseCoordinates(coordsText) {
+            const coordinates = [];
+            // Separar por espacios o nuevas líneas
+            const coordStrings = coordsText.split(/\s+/);
+            
+            for (let coordStr of coordStrings) {
+                if (coordStr.trim() === '') continue;
+                
+                const parts = coordStr.split(',');
+                if (parts.length >= 2) {
+                    const lng = parseFloat(parts[0]);
+                    const lat = parseFloat(parts[1]);
+                    
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        coordinates.push([lat, lng]);
+                    }
+                }
+            }
+            
+            return coordinates;
+        }
+        
+        // --- CARGAR KML ---
         const kmlUrl = 'https://raw.githubusercontent.com/Javiergar900/prueba-topografica/6047b52c13c61d55185b69b85e96e507562fdf6e/circunscripciones.kml';
         
         // Mostrar loader
         document.getElementById('loader').style.display = 'block';
         
-        loadKMLDirectly(kmlUrl)
-            .then(geojson => {
-                console.log('GeoJSON cargado:', geojson);
+        fetch(kmlUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(kmlText => {
+                console.log('KML descargado exitosamente, tamaño:', kmlText.length, 'bytes');
                 
-                // Crear capa GeoJSON
-                const geoJsonLayer = L.geoJSON(geojson, {
-                    style: function(feature) {
-                        return {
-                            fillColor: getRandomColor(),
+                // Parsear el KML
+                const polygons = parseKML(kmlText);
+                
+                if (polygons.length === 0) {
+                    throw new Error('No se encontraron polígonos en el KML');
+                }
+                
+                // Crear polígonos en el mapa
+                polygons.forEach((polygon, index) => {
+                    let layer;
+                    
+                    if (polygon.isLine) {
+                        // Crear línea
+                        layer = L.polyline(polygon.coordinates, {
+                            color: '#3498db',
+                            weight: 3,
+                            opacity: 0.8
+                        });
+                    } else {
+                        // Crear polígono
+                        layer = L.polygon(polygon.coordinates, {
+                            className: 'kml-polygon',
+                            fillColor: getColorForIndex(index),
+                            color: '#2c3e50',
                             weight: 3,
                             opacity: 0.8,
-                            color: '#2c3e50',
                             fillOpacity: 0.3
-                        };
-                    },
-                    onEachFeature: function(feature, layer) {
-                        // Añadir popup con información
-                        if (feature.properties && feature.properties.name) {
-                            layer.bindPopup(`<b>${feature.properties.name}</b>`);
-                            layer.bindTooltip(feature.properties.name, {
-                                permanent: false,
-                                direction: 'center'
-                            });
-                        }
-                        
-                        // Estilo hover
-                        layer.on('mouseover', function() {
-                            layer.setStyle({
+                        });
+                    }
+                    
+                    // Añadir popup y tooltip
+                    layer.bindPopup(`<b>${polygon.name}</b>`);
+                    layer.bindTooltip(polygon.name, {
+                        permanent: false,
+                        direction: 'center'
+                    });
+                    
+                    // Efecto hover
+                    layer.on('mouseover', function() {
+                        if (!polygon.isLine) {
+                            this.setStyle({
                                 weight: 4,
                                 color: '#e74c3c',
                                 fillOpacity: 0.5
                             });
-                        });
-                        
-                        layer.on('mouseout', function() {
-                            layer.setStyle({
+                        } else {
+                            this.setStyle({
+                                weight: 5,
+                                color: '#e74c3c'
+                            });
+                        }
+                    });
+                    
+                    layer.on('mouseout', function() {
+                        if (!polygon.isLine) {
+                            this.setStyle({
                                 weight: 3,
                                 color: '#2c3e50',
                                 fillOpacity: 0.3
                             });
-                        });
-                    }
+                        } else {
+                            this.setStyle({
+                                weight: 3,
+                                color: '#3498db'
+                            });
+                        }
+                    });
+                    
+                    // Añadir a la capa
+                    kmlLayer.addLayer(layer);
                 });
                 
-                // Añadir al layer group
-                kmlLayer.addLayer(geoJsonLayer);
+                // Añadir capa al mapa
                 map.addLayer(kmlLayer);
                 
-                // Ajustar vista
-                if (geoJsonLayer.getBounds && geoJsonLayer.getBounds().isValid()) {
-                    map.fitBounds(geoJsonLayer.getBounds().pad(0.1));
-                    console.log('Mapa ajustado a los límites del KML');
+                // Calcular bounds y ajustar vista
+                if (kmlLayer.getLayers().length > 0) {
+                    const bounds = L.latLngBounds([]);
+                    kmlLayer.eachLayer(layer => {
+                        if (layer.getBounds) {
+                            bounds.extend(layer.getBounds());
+                        }
+                    });
+                    
+                    if (bounds.isValid()) {
+                        map.fitBounds(bounds.pad(0.1));
+                        console.log('Mapa ajustado a bounds:', bounds);
+                    }
                 }
                 
                 // Ocultar loader
                 document.getElementById('loader').style.display = 'none';
                 
                 // Mostrar mensaje de éxito
-                const featureCount = geojson.features ? geojson.features.length : 0;
                 L.popup()
                     .setLatLng(map.getCenter())
                     .setContent(`
                         <div style="padding: 10px; text-align: center;">
                             <h4 style="margin: 0 0 10px 0; color: #27ae60;">✓ KML Cargado</h4>
-                            <p>${featureCount} circunscripciones cargadas</p>
+                            <p>${polygons.length} circunscripciones cargadas</p>
                         </div>
                     `)
                     .openOn(map);
@@ -314,53 +378,30 @@
                 
             })
             .catch(error => {
-                console.error('Error final cargando KML:', error);
+                console.error('Error cargando KML:', error);
                 
-                // Mostrar mensaje de error amigable
-                const errorContent = `
+                // Mostrar mensaje de error
+                document.getElementById('loader').innerHTML = `
                     <div style="padding: 15px; text-align: center;">
                         <div style="color: #e74c3c; font-size: 24px; margin-bottom: 10px;">⚠️</div>
                         <h4 style="margin: 0 0 10px 0; color: #e74c3c;">Error cargando KML</h4>
                         <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
-                            No se pudo cargar el archivo de circunscripciones.<br>
                             ${error.message}
                         </p>
-                        <div style="display: flex; gap: 10px; justify-content: center;">
-                            <button onclick="retryLoadKML()" style="padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                Reintentar
-                            </button>
-                            <button onclick="continueWithoutKML()" style="padding: 8px 15px; background: #95a5a6; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                Continuar sin KML
-                            </button>
-                        </div>
+                        <button onclick="window.location.reload()" style="padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Reintentar
+                        </button>
                     </div>
                 `;
-                
-                document.getElementById('loader').innerHTML = errorContent;
             });
         
-        // Función para generar colores aleatorios
-        function getRandomColor() {
+        // Función para generar colores
+        function getColorForIndex(index) {
             const colors = [
                 '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
-                '#1abc9c', '#d35400', '#c0392b', '#16a085', '#8e44ad',
-                '#27ae60', '#2980b9', '#8e44ad', '#2c3e50', '#f1c40f'
+                '#1abc9c', '#d35400', '#c0392b', '#16a085', '#8e44ad'
             ];
-            return colors[Math.floor(Math.random() * colors.length)];
-        }
-        
-        // Funciones para manejo de errores
-        function retryLoadKML() {
-            window.location.reload();
-        }
-        
-        function continueWithoutKML() {
-            document.getElementById('loader').style.display = 'none';
-            L.popup()
-                .setLatLng(map.getCenter())
-                .setContent('<div style="padding: 10px;">Continuando sin capa de circunscripciones</div>')
-                .openOn(map);
-            setTimeout(() => map.closePopup(), 1500);
+            return colors[index % colors.length];
         }
         
         // --- CONTROL DE CAPAS ---
@@ -510,8 +551,6 @@
         
         // Hacer funciones globales
         window.saveEvent = saveEvent;
-        window.retryLoadKML = retryLoadKML;
-        window.continueWithoutKML = continueWithoutKML;
 
     </script>
 </body>
