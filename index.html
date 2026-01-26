@@ -148,7 +148,7 @@
         // Inicializar mapa
         const map = L.map('map', {
             center: chascomusCoord,
-            zoom: 13,
+            zoom: 5,
             zoomControl: false
         });
         
@@ -156,7 +156,7 @@
         
         // Capas base
         const cyclOSM = L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
-            maxZoom: 13, 
+            maxZoom: 25, 
             attribution: '© CyclOSM'
         }).addTo(map);
         
@@ -362,18 +362,7 @@
                 // Ocultar loader
                 document.getElementById('loader').style.display = 'none';
                 
-                // Mostrar mensaje de éxito
-                L.popup()
-                    .setLatLng(map.getCenter())
-                    .setContent(`
-                        <div style="padding: 10px; text-align: center;">
-                            <h4 style="margin: 0 0 10px 0; color: #27ae60;">✓ KML Cargado</h4>
-                            <p>${polygons.length} circunscripciones cargadas</p>
-                        </div>
-                    `)
-                    .openOn(map);
-                
-                setTimeout(() => map.closePopup(), 2000);
+
                 
             })
             .catch(error => {
@@ -401,8 +390,7 @@
         };
         
         const overlayMaps = {
-            "Circunscripciones": kmlLayer,
-            "Eventos": markers
+
         };
         
         L.control.layers(baseMaps, overlayMaps, { 
@@ -487,7 +475,8 @@
         // Control para limpiar marcadores
         const clearControl = L.control({position: 'bottomright'});
         clearControl.onAdd = function() {
-            const div = L.DomUtil.create('div', 'leaflet-control-custom');            
+            const div = L.DomUtil.create('div', 'leaflet-control-custom');
+            
             L.DomEvent.on(div, 'click', function(e) {
                 L.DomEvent.stopPropagation(e);
                 if (markers.getLayers().length > 0) {
