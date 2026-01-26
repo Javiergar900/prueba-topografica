@@ -61,20 +61,19 @@
             pointer-events: none;
         }
         
-        /* Estilo para los polígonos del KML */
+        /* Estilo para los polígonos del KML - BORDE NEGRO Y TOTALMENTE TRANSPARENTE */
         .kml-polygon {
-            fillColor: #3498db;
-            color: #2980b9;
-            weight: 3;
-            opacity: 0.9;
-            fillOpacity: 0.3;
+            fillColor: '#000000'; /* No importa porque es transparente */
+            color: '#000000'; /* Borde negro */
+            weight: 2;
+            opacity: 0.8;
+            fillOpacity: 0; /* TOTALMENTE TRANSPARENTE */
         }
         
         .kml-polygon:hover {
-            fillColor: #e74c3c;
-            color: #c0392b;
-            fillOpacity: 0.5;
-            weight: 4;
+            color: '#e74c3c'; /* Borde rojo al hacer hover */
+            weight: 3;
+            fillOpacity: 0; /* Mantener transparente */
         }
         
         /* Controles personalizados */
@@ -277,26 +276,26 @@
                     throw new Error('No se encontraron polígonos en el KML');
                 }
                 
-                // Crear polígonos en el mapa
+                // Crear polígonos en el mapa - BORDE NEGRO Y TRANSPARENTE
                 polygons.forEach((polygon, index) => {
                     let layer;
                     
                     if (polygon.isLine) {
                         // Crear línea
                         layer = L.polyline(polygon.coordinates, {
-                            color: '#3498db',
-                            weight: 3,
+                            color: '#000000', // Negro
+                            weight: 2,
                             opacity: 0.8
                         });
                     } else {
-                        // Crear polígono
+                        // Crear polígono - BORDE NEGRO Y TOTALMENTE TRANSPARENTE
                         layer = L.polygon(polygon.coordinates, {
                             className: 'kml-polygon',
-                            fillColor: getColorForIndex(index),
-                            color: '#2c3e50',
-                            weight: 3,
+                            fillColor: '#000000', // No importa porque es transparente
+                            color: '#000000', // Borde negro
+                            weight: 2,
                             opacity: 0.8,
-                            fillOpacity: 0.3
+                            fillOpacity: 0 // TOTALMENTE TRANSPARENTE
                         });
                     }
                     
@@ -311,14 +310,14 @@
                     layer.on('mouseover', function() {
                         if (!polygon.isLine) {
                             this.setStyle({
-                                weight: 4,
-                                color: '#e74c3c',
-                                fillOpacity: 0.5
+                                weight: 3,
+                                color: '#e74c3c', // Rojo al hover
+                                fillOpacity: 0 // Mantener transparente
                             });
                         } else {
                             this.setStyle({
-                                weight: 5,
-                                color: '#e74c3c'
+                                weight: 3,
+                                color: '#e74c3c' // Rojo al hover
                             });
                         }
                     });
@@ -326,14 +325,14 @@
                     layer.on('mouseout', function() {
                         if (!polygon.isLine) {
                             this.setStyle({
-                                weight: 3,
-                                color: '#2c3e50',
-                                fillOpacity: 0.3
+                                weight: 2,
+                                color: '#000000', // Negro
+                                fillOpacity: 0 // Mantener transparente
                             });
                         } else {
                             this.setStyle({
-                                weight: 3,
-                                color: '#3498db'
+                                weight: 2,
+                                color: '#000000' // Negro
                             });
                         }
                     });
@@ -394,15 +393,6 @@
                     </div>
                 `;
             });
-        
-        // Función para generar colores
-        function getColorForIndex(index) {
-            const colors = [
-                '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
-                '#1abc9c', '#d35400', '#c0392b', '#16a085', '#8e44ad'
-            ];
-            return colors[index % colors.length];
-        }
         
         // --- CONTROL DE CAPAS ---
         const baseMaps = { 
