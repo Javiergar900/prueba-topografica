@@ -28,8 +28,8 @@
             margin-top: 4px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            box-sizing: border-box; /* Importante para móviles */
-            font-size: 16px; /* Evita zoom automático en iOS */
+            box-sizing: border-box;
+            font-size: 16px;
         }
         .btn-save {
             background-color: #e74c3c;
@@ -60,64 +60,247 @@
             font-size: 13px;
             pointer-events: none;
         }
+        
+        /* Control de capas mejorado */
+        .leaflet-control-layers {
+            background: white;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+        }
+        
+        /* Estilo para el loader */
+        .loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        /* Estilo para los polígonos del KML */
+        .kml-polygon {
+            fillColor: #3498db;
+            color: #2980b9;
+            weight: 2;
+            opacity: 0.7;
+            fillOpacity: 0.2;
+        }
+        
+        /* Botón de limpiar */
+        .leaflet-control-clear {
+            background: white;
+            border-radius: 4px;
+            padding: 5px 10px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
     <div class="info-floating">Toca el mapa para registrar un evento</div>
     <div id="map"></div>
+    <div id="loader" class="loader" style="display: none;">
+        <div>Cargando capa KML...</div>
+        <div style="margin-top: 10px; font-size: 12px; color: #666;">circunscripciones.kml</div>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Usaremos fetch y parseo manual de KML -->
 
     <script>
         const chascomusCoord = [-35.5762, -58.0104];
 
         // --- CAPAS ---
         const cyclOSM = L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
-            maxZoom: 20, attribution: '© CyclOSM'
+            maxZoom: 20, 
+            attribution: '© CyclOSM'
         });
+        
         const esriTopo = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Esri Topo'
         });
 
         const map = L.map('map', {
             center: chascomusCoord,
-            zoom: 14,
+            zoom: 13,
             layers: [cyclOSM],
-            zoomControl: false // Lo quitamos para ganar espacio o moverlo
+            zoomControl: false
         });
         
         L.control.zoom({ position: 'topright' }).addTo(map);
 
-        const baseMaps = { "Rural/Ciclistas": cyclOSM, "Topográfico": esriTopo };
-        L.control.layers(baseMaps, null, { collapsed: true }).addTo(map);
+        // --- FUNCIÓN PARA CARGAR Y PARSEAR KML ---
+        function loadKML(url) {
+            return fetch(url)
+                .then(response => response.text())
+                .then(kmlText => {
+                    const parser = new DOMParser();
+                    const kmlDoc = parser.parseFromString(kmlText, 'text/xml');
+                    
+                    // Extraer las coordenadas de los polígonos del KML
+                    const placemarks = kmlDoc.getElementsByTagName('Placemark');
+                    const polygons = [];
+                    
+                    for (let placemark of placemarks) {
+                        const coordinatesElements = placemark.getElementsByTagName('coordinates');
+                        for (let coordElement of coordinatesElements) {
+                            const coordsText = coordElement.textContent.trim();
+                            const lines = coordsText.split('\n');
+                            
+                            const polygonCoords = [];
+                            for (let line of lines) {
+                                const parts = line.trim().split(',');
+                                if (parts.length >= 2) {
+                                    const lng = parseFloat(parts[0]);
+                                    const lat = parseFloat(parts[1]);
+                                    if (!isNaN(lat) && !isNaN(lng)) {
+                                        polygonCoords.push([lat, lng]);
+                                    }
+                                }
+                            }
+                            
+                            if (polygonCoords.length > 0) {
+                                polygons.push(polygonCoords);
+                            }
+                        }
+                    }
+                    
+                    return polygons;
+                });
+        }
+
+        // --- CARGAR KML DESDE GITHUB ---
+        const kmlUrl = 'https://raw.githubusercontent.com/Javiergar900/prueba-topografica/6047b52c13c61d55185b69b85e96e507562fdf6e/circunscripciones.kml';
+        let kmlLayer = L.layerGroup();
+        
+        // Mostrar loader
+        document.getElementById('loader').style.display = 'block';
+        
+        loadKML(kmlUrl)
+            .then(polygons => {
+                // Crear capa con los polígonos
+                polygons.forEach(polygonCoords => {
+                    if (polygonCoords.length > 2) {
+                        L.polygon(polygonCoords, {
+                            className: 'kml-polygon',
+                            fillColor: '#3498db',
+                            color: '#2980b9',
+                            weight: 2,
+                            opacity: 0.7,
+                            fillOpacity: 0.2
+                        }).addTo(kmlLayer);
+                    }
+                });
+                
+                // Añadir capa al mapa
+                map.addLayer(kmlLayer);
+                
+                // Calcular bounds de todos los polígonos
+                let bounds = null;
+                kmlLayer.eachLayer(layer => {
+                    if (layer.getBounds) {
+                        if (bounds === null) {
+                            bounds = layer.getBounds();
+                        } else {
+                            bounds.extend(layer.getBounds());
+                        }
+                    }
+                });
+                
+                // Ajustar vista si hay polígonos
+                if (bounds && bounds.isValid()) {
+                    map.fitBounds(bounds.pad(0.1));
+                }
+                
+                // Ocultar loader
+                document.getElementById('loader').style.display = 'none';
+                
+                console.log('KML cargado:', polygons.length, 'polígonos encontrados');
+            })
+            .catch(error => {
+                console.error('Error cargando KML:', error);
+                document.getElementById('loader').innerHTML = 
+                    '<div style="color: red;">Error cargando KML</div>' +
+                    '<div style="margin-top: 10px; font-size: 12px;">' + error.message + '</div>';
+                
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                }, 3000);
+            });
+
+        // --- CAPAS PARA EL CONTROL DE CAPAS ---
+        const baseMaps = { 
+            "Rural/Ciclistas": cyclOSM, 
+            "Topográfico": esriTopo 
+        };
+        
+        const overlayMaps = {
+            "Circunscripciones": kmlLayer
+        };
+        
+        // Añadir control de capas
+        L.control.layers(baseMaps, overlayMaps, { 
+            collapsed: true,
+            position: 'topright'
+        }).addTo(map);
 
         // --- LÓGICA DE CARGA DE EVENTOS ---
+        const markers = L.layerGroup().addTo(map);
 
         function saveEvent(lat, lng) {
             const tipo = document.getElementById('tipo').value;
             const obs = document.getElementById('obs').value;
             const hora = document.getElementById('hora').value;
 
-            // Aquí podrías enviar los datos a una base de datos o Firebase
-            // Por ahora, solo creamos un marcador permanente
-            const marker = L.marker([lat, lng]).addTo(map);
+            // Crear marcador
+            const marker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background-color: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);">!</div>`
+                })
+            }).addTo(markers);
+            
             marker.bindPopup(`
-                <b>${tipo}</b><br>
-                <small>${hora}</small><hr>
-                ${obs}
+                <div style="max-width: 250px;">
+                    <b style="color: #e74c3c;">${tipo}</b><br>
+                    <small>Hora: ${hora}</small><br>
+                    <small>Coords: ${lat.toFixed(4)}, ${lng.toFixed(4)}</small>
+                    <hr style="margin: 5px 0;">
+                    <div style="font-size: 12px;">${obs || 'Sin observaciones'}</div>
+                    <div style="font-size: 10px; color: #666; margin-top: 5px;">
+                        ${new Date().toLocaleDateString()}
+                    </div>
+                </div>
             `).openPopup();
+            
+            console.log('Evento guardado:', { lat, lng, tipo, hora, obs });
             
             map.closePopup();
         }
 
         map.on('click', function(e) {
             const { lat, lng } = e.latlng;
-            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+            });
 
             const formHtml = `
                 <div class="form-container">
-                    <h3 style="margin:0; color:#2c3e50;">Nuevo Reporte</h3>
+                    <h3 style="margin:0 0 10px 0; color:#2c3e50;">Nuevo Reporte</h3>
+                    <div style="font-size: 11px; color: #666; margin-bottom: 10px;">
+                        ${lat.toFixed(6)}, ${lng.toFixed(6)}
+                    </div>
+                    
                     <label>Tipología</label>
                     <select id="tipo">
                         <option value="Robo/Hurto">Robo/Hurto</option>
@@ -128,10 +311,10 @@
                     </select>
 
                     <label>Hora del evento</label>
-                    <input type="time" id="hora" value="${now}">
+                    <input type="time" id="hora" value="${timeString}">
 
                     <label>Observaciones</label>
-                    <textarea id="obs" rows="3" placeholder="Descripción..."></textarea>
+                    <textarea id="obs" rows="3" placeholder="Descripción del evento..."></textarea>
 
                     <button class="btn-save" onclick="saveEvent(${lat}, ${lng})">GUARDAR EVENTO</button>
                 </div>
@@ -142,6 +325,47 @@
                 .setContent(formHtml)
                 .openOn(map);
         });
+
+        // Añadir control para limpiar marcadores
+        const clearControl = L.control({position: 'bottomright'});
+        clearControl.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'leaflet-control leaflet-control-clear');
+            div.innerHTML = '<a href="#" title="Limpiar marcadores" style="display: block; padding: 5px 10px; text-decoration: none; color: #333;">🗑️ Limpiar</a>';
+            
+            div.onclick = function(e) {
+                e.preventDefault();
+                if (confirm('¿Eliminar todos los marcadores de eventos?')) {
+                    markers.clearLayers();
+                }
+            };
+            
+            return div;
+        };
+        clearControl.addTo(map);
+
+        // Control para mostrar/ocultar KML
+        const kmlControl = L.control({position: 'topright'});
+        kmlControl.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'leaflet-control leaflet-control-clear');
+            div.innerHTML = '<a href="#" title="Mostrar/ocultar circunscripciones" style="display: block; padding: 5px 10px; text-decoration: none; color: #333;">🗺️ Circunscripciones</a>';
+            
+            let kmlVisible = true;
+            div.onclick = function(e) {
+                e.preventDefault();
+                if (kmlVisible) {
+                    map.removeLayer(kmlLayer);
+                    kmlVisible = false;
+                    div.innerHTML = '<a href="#" style="display: block; padding: 5px 10px; text-decoration: none; color: #666;">🗺️ Mostrar Circunscripciones</a>';
+                } else {
+                    map.addLayer(kmlLayer);
+                    kmlVisible = true;
+                    div.innerHTML = '<a href="#" style="display: block; padding: 5px 10px; text-decoration: none; color: #333;">🗺️ Ocultar Circunscripciones</a>';
+                }
+            };
+            
+            return div;
+        };
+        kmlControl.addTo(map);
 
     </script>
 </body>
