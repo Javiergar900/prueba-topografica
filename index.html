@@ -11,40 +11,125 @@
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         #map { height: 100vh; width: 100%; }
         
+        /* Menú de registro de delitos */
+        #crime-menu {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            padding: 15px;
+            width: 320px;
+            max-height: 80vh;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e74c3c;
+        }
+        
+        .menu-header h3 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+        }
+        
         /* Estilos del formulario móvil */
         .form-container {
             padding: 10px;
-            min-width: 200px;
         }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
         .form-container label {
             display: block;
             font-weight: bold;
-            margin-top: 8px;
-            font-size: 12px;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #2c3e50;
         }
+        
         .form-container input, .form-container select, .form-container textarea {
             width: 100%;
-            padding: 8px;
-            margin-top: 4px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
             box-sizing: border-box;
-            font-size: 16px;
+            font-size: 14px;
         }
+        
+        .form-container textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
         .btn-save {
             background-color: #e74c3c;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 12px;
             width: 100%;
-            margin-top: 15px;
-            border-radius: 4px;
+            margin-top: 10px;
+            border-radius: 5px;
             font-weight: bold;
             cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-save:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-open-menu {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-open-menu:hover {
+            background: #c0392b;
         }
 
         /* Ajuste visual del popup */
-        .leaflet-popup-content-wrapper { border-radius: 8px; }
+        .leaflet-popup-content-wrapper { 
+            border-radius: 8px; 
+            max-width: 300px;
+        }
+        
+        .leaflet-popup-content {
+            margin: 8px 12px;
+        }
 
         /* Botón de Ayuda/Instrucción flotante */
         .info-floating {
@@ -53,63 +138,35 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 1000;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 13px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
             pointer-events: none;
+            text-align: center;
+            backdrop-filter: blur(5px);
         }
         
-        /* Estilo para los polígonos del KML */
-        .kml-polygon {
-            fillColor: #3498db;
-            color: #2980b9;
-            weight: 3;
-            opacity: 0.9;
-            fillOpacity: 0.3;
-        }
-        
-        .kml-polygon:hover {
-            fillColor: #e74c3c;
-            color: #c0392b;
-            fillOpacity: 0.5;
-            weight: 4;
-        }
-        
-        /* Controles personalizados */
-        .leaflet-control-custom {
+        /* Control de capas mejorado */
+        .leaflet-control-layers {
             background: white;
-            border-radius: 4px;
-            padding: 0;
+            padding: 5px;
+            border-radius: 5px;
             box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-            cursor: pointer;
-            margin-bottom: 10px;
         }
         
-        .leaflet-control-custom a {
-            display: block;
-            padding: 8px 12px;
-            text-decoration: none;
-            color: #333;
-            font-size: 12px;
-        }
-        
-        .leaflet-control-custom a:hover {
-            background: #f8f9fa;
-        }
-        
-        /* Loader */
+        /* Estilo para el loader */
         .loader {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 1000;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
             text-align: center;
             display: none;
         }
@@ -118,26 +175,160 @@
             border: 4px solid #f3f3f3;
             border-top: 4px solid #3498db;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
+            margin: 0 auto 15px;
         }
         
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Estilo para los polígonos del KML - MÁS TRANSPARENTES */
+        .kml-polygon {
+            fillColor: #3498db;
+            color: #2980b9;
+            weight: 1.5;
+            opacity: 0.5;
+            fillOpacity: 0.15; /* Más transparente */
+        }
+        
+        .kml-polygon:hover {
+            fillColor: #e74c3c;
+            color: #c0392b;
+            fillOpacity: 0.3; /* Un poco más opaco al hacer hover */
+            weight: 2.5;
+        }
+        
+        /* Botón de limpiar */
+        .leaflet-control-clear {
+            background: white;
+            border-radius: 4px;
+            padding: 8px 12px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* Contador de eventos */
+        .event-counter {
+            position: absolute;
+            top: 70px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(52, 152, 219, 0.9);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: none;
+        }
+        
+        /* Tipología colores */
+        .crime-type-option {
+            padding: 3px 6px;
+            border-radius: 3px;
+            margin-right: 5px;
+        }
+        
+        .robo { background-color: #e74c3c; color: white; }
+        .sospechoso { background-color: #f39c12; color: white; }
+        .abigeato { background-color: #8e44ad; color: white; }
+        .vandalismo { background-color: #d35400; color: white; }
+        .otro { background-color: #7f8c8d; color: white; }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            #crime-menu {
+                width: 90%;
+                right: 5%;
+                max-height: 70vh;
+            }
+            
+            .btn-open-menu {
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="info-floating">Toca el mapa para registrar un evento</div>
+    <div class="info-floating">Toca el mapa para registrar un evento o usa el botón +</div>
+    <button class="btn-open-menu" id="openMenuBtn" title="Abrir menú de registro">+</button>
+    
+    <div id="crime-menu">
+        <div class="menu-header">
+            <h3>📝 Registrar Delito</h3>
+            <button class="close-btn" id="closeMenuBtn">×</button>
+        </div>
+        
+        <div class="form-container">
+            <div class="form-group">
+                <label for="tipo">Tipología del Delito *</label>
+                <select id="tipo">
+                    <option value="Robo/Hurto">🔴 Robo/Hurto</option>
+                    <option value="Presencia Sospechosa">🟠 Presencia Sospechosa</option>
+                    <option value="Abigeato">🟣 Abigeato (Ganado)</option>
+                    <option value="Vandalismo">🟤 Vandalismo</option>
+                    <option value="Otro">⚫ Otro</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="fecha">Fecha del Hecho *</label>
+                <input type="date" id="fecha" value="">
+            </div>
+            
+            <div class="form-group">
+                <label for="hora">Hora Aproximada *</label>
+                <input type="time" id="hora" value="">
+            </div>
+            
+            <div class="form-group">
+                <label for="descripcion">Descripción Detallada</label>
+                <textarea id="descripcion" placeholder="Describa el hecho, involucrados, vehículos, características, etc..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="victima">Víctima/Afectado</label>
+                <input type="text" id="victima" placeholder="Nombre o referencia">
+            </div>
+            
+            <div class="form-group">
+                <label for="danos">Daños/Perdidas</label>
+                <input type="text" id="danos" placeholder="Ej: 10 cabezas de ganado, herramientas, etc.">
+            </div>
+            
+            <div class="form-group">
+                <label for="contacto">Contacto (opcional)</label>
+                <input type="text" id="contacto" placeholder="Teléfono o email">
+            </div>
+            
+            <button class="btn-save" id="saveBtn">GUARDAR REPORTE</button>
+            
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
+                <p><strong>Nota:</strong> Los datos se guardarán localmente. Para exportar a planilla use el botón "Exportar" cuando esté disponible.</p>
+            </div>
+        </div>
+    </div>
+    
     <div id="map"></div>
-    <div id="loader" class="loader">
+    
+    <div class="loader" id="loader">
         <div class="loader-spinner"></div>
         <div>Cargando circunscripciones...</div>
+        <div style="margin-top: 15px; font-size: 12px; color: #666;">circunscripciones.kml</div>
     </div>
+    
+    <div class="event-counter" id="eventCounter">Eventos: 0</div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -168,241 +359,349 @@
         // Variables globales
         let kmlLayer = L.layerGroup();
         const markers = L.layerGroup().addTo(map);
+        let currentMarker = null;
+        let eventCount = 0;
         
-        // --- FUNCIÓN SIMPLIFICADA PARA PARSEAR KML ---
-        function parseKML(kmlText) {
-            console.log('Parseando KML...');
-            const parser = new DOMParser();
-            const kmlDoc = parser.parseFromString(kmlText, 'text/xml');
-            
-            // Buscar todos los polígonos
-            const polygons = [];
-            const placemarks = kmlDoc.getElementsByTagName('Placemark');
-            
-            console.log('Encontrados', placemarks.length, 'placemarks');
-            
-            for (let i = 0; i < placemarks.length; i++) {
-                const placemark = placemarks[i];
-                
-                // Obtener nombre
-                let name = `Circunscripción ${i + 1}`;
-                const nameElements = placemark.getElementsByTagName('name');
-                if (nameElements.length > 0) {
-                    name = nameElements[0].textContent;
-                }
-                
-                // Buscar coordenadas en Polygon
-                const polygonsElements = placemark.getElementsByTagName('Polygon');
-                for (let polyElement of polygonsElements) {
-                    const coordElements = polyElement.getElementsByTagName('coordinates');
-                    for (let coordElement of coordElements) {
-                        const coordsText = coordElement.textContent.trim();
-                        const coordsArray = parseCoordinates(coordsText);
-                        
-                        if (coordsArray.length > 2) {
-                            polygons.push({
-                                name: name,
-                                coordinates: coordsArray
-                            });
-                        }
-                    }
-                }
-                
-                // Buscar también en LineString (por si acaso)
-                const linesElements = placemark.getElementsByTagName('LineString');
-                for (let lineElement of linesElements) {
-                    const coordElements = lineElement.getElementsByTagName('coordinates');
-                    for (let coordElement of coordElements) {
-                        const coordsText = coordElement.textContent.trim();
-                        const coordsArray = parseCoordinates(coordsText);
-                        
-                        if (coordsArray.length > 1) {
-                            polygons.push({
-                                name: name,
-                                coordinates: coordsArray,
-                                isLine: true
-                            });
-                        }
-                    }
-                }
-            }
-            
-            console.log('Polígonos parseados:', polygons.length);
-            return polygons;
-        }
-        
-        // Función auxiliar para parsear coordenadas
-        function parseCoordinates(coordsText) {
-            const coordinates = [];
-            // Separar por espacios o nuevas líneas
-            const coordStrings = coordsText.split(/\s+/);
-            
-            for (let coordStr of coordStrings) {
-                if (coordStr.trim() === '') continue;
-                
-                const parts = coordStr.split(',');
-                if (parts.length >= 2) {
-                    const lng = parseFloat(parts[0]);
-                    const lat = parseFloat(parts[1]);
+        // --- FUNCIÓN PARA CARGAR KML ---
+        function loadKML(url) {
+            return fetch(url)
+                .then(response => response.text())
+                .then(kmlText => {
+                    const parser = new DOMParser();
+                    const kmlDoc = parser.parseFromString(kmlText, 'text/xml');
                     
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                        coordinates.push([lat, lng]);
+                    // Extraer las coordenadas de los polígonos del KML
+                    const placemarks = kmlDoc.getElementsByTagName('Placemark');
+                    const polygons = [];
+                    
+                    for (let placemark of placemarks) {
+                        const coordinatesElements = placemark.getElementsByTagName('coordinates');
+                        for (let coordElement of coordinatesElements) {
+                            const coordsText = coordElement.textContent.trim();
+                            const lines = coordsText.split('\n');
+                            
+                            const polygonCoords = [];
+                            for (let line of lines) {
+                                const parts = line.trim().split(',');
+                                if (parts.length >= 2) {
+                                    const lng = parseFloat(parts[0]);
+                                    const lat = parseFloat(parts[1]);
+                                    if (!isNaN(lat) && !isNaN(lng)) {
+                                        polygonCoords.push([lat, lng]);
+                                    }
+                                }
+                            }
+                            
+                            if (polygonCoords.length > 0) {
+                                polygons.push(polygonCoords);
+                            }
+                        }
                     }
-                }
-            }
-            
-            return coordinates;
+                    
+                    return polygons;
+                });
         }
         
-        // --- CARGAR KML ---
+        // --- CARGAR KML DESDE GITHUB ---
         const kmlUrl = 'https://raw.githubusercontent.com/Javiergar900/prueba-topografica/6047b52c13c61d55185b69b85e96e507562fdf6e/circunscripciones.kml';
         
         // Mostrar loader
         document.getElementById('loader').style.display = 'block';
         
-        fetch(kmlUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
-                }
-                return response.text();
-            })
-            .then(kmlText => {
-                console.log('KML descargado exitosamente, tamaño:', kmlText.length, 'bytes');
-                
-                // Parsear el KML
-                const polygons = parseKML(kmlText);
-                
-                if (polygons.length === 0) {
-                    throw new Error('No se encontraron polígonos en el KML');
-                }
-                
-                // Crear polígonos en el mapa
-                polygons.forEach((polygon, index) => {
-                    let layer;
-                    
-                    if (polygon.isLine) {
-                        // Crear línea
-                        layer = L.polyline(polygon.coordinates, {
-                            color: '#3498db',
-                            weight: 3,
-                            opacity: 0.8
-                        });
-                    } else {
-                        // Crear polígono
-                        layer = L.polygon(polygon.coordinates, {
+        loadKML(kmlUrl)
+            .then(polygons => {
+                // Crear capa con los polígonos
+                polygons.forEach((polygonCoords, index) => {
+                    if (polygonCoords.length > 2) {
+                        L.polygon(polygonCoords, {
                             className: 'kml-polygon',
                             fillColor: getColorForIndex(index),
-                            color: '#2c3e50',
-                            weight: 3,
-                            opacity: 0.8,
-                            fillOpacity: 0.3
+                            color: '#2980b9',
+                            weight: 1.5,
+                            opacity: 0.5,
+                            fillOpacity: 0.15 // MUY TRANSPARENTE
+                        }).addTo(kmlLayer).bindTooltip(`Circunscripción ${index + 1}`, {
+                            permanent: false,
+                            direction: 'center'
                         });
                     }
-                    
-                    // Añadir popup y tooltip
-                    layer.bindPopup(`<b>${polygon.name}</b>`);
-                    layer.bindTooltip(polygon.name, {
-                        permanent: false,
-                        direction: 'center'
-                    });
-                    
-                    // Efecto hover
-                    layer.on('mouseover', function() {
-                        if (!polygon.isLine) {
-                            this.setStyle({
-                                weight: 4,
-                                color: '#e74c3c',
-                                fillOpacity: 0.5
-                            });
-                        } else {
-                            this.setStyle({
-                                weight: 5,
-                                color: '#e74c3c'
-                            });
-                        }
-                    });
-                    
-                    layer.on('mouseout', function() {
-                        if (!polygon.isLine) {
-                            this.setStyle({
-                                weight: 3,
-                                color: '#2c3e50',
-                                fillOpacity: 0.3
-                            });
-                        } else {
-                            this.setStyle({
-                                weight: 3,
-                                color: '#3498db'
-                            });
-                        }
-                    });
-                    
-                    // Añadir a la capa
-                    kmlLayer.addLayer(layer);
                 });
                 
                 // Añadir capa al mapa
                 map.addLayer(kmlLayer);
                 
-                // Calcular bounds y ajustar vista
-                if (kmlLayer.getLayers().length > 0) {
-                    const bounds = L.latLngBounds([]);
-                    kmlLayer.eachLayer(layer => {
-                        if (layer.getBounds) {
+                // Calcular bounds de todos los polígonos
+                let bounds = null;
+                kmlLayer.eachLayer(layer => {
+                    if (layer.getBounds) {
+                        if (bounds === null) {
+                            bounds = layer.getBounds();
+                        } else {
                             bounds.extend(layer.getBounds());
                         }
-                    });
-                    
-                    if (bounds.isValid()) {
-                        map.fitBounds(bounds.pad(0.1));
-                        console.log('Mapa ajustado a bounds:', bounds);
                     }
+                });
+                
+                // Ajustar vista si hay polígonos
+                if (bounds && bounds.isValid()) {
+                    map.fitBounds(bounds.pad(0.1));
                 }
                 
                 // Ocultar loader
                 document.getElementById('loader').style.display = 'none';
                 
-                // Mostrar mensaje de éxito
-                L.popup()
-                    .setLatLng(map.getCenter())
-                    .setContent(`
-                        <div style="padding: 10px; text-align: center;">
-                            <h4 style="margin: 0 0 10px 0; color: #27ae60;">✓ KML Cargado</h4>
-                            <p>${polygons.length} circunscripciones cargadas</p>
-                        </div>
-                    `)
-                    .openOn(map);
-                
-                setTimeout(() => map.closePopup(), 2000);
-                
+                console.log('KML cargado:', polygons.length, 'polígonos encontrados');
             })
             .catch(error => {
                 console.error('Error cargando KML:', error);
-                
-                // Mostrar mensaje de error
-                document.getElementById('loader').innerHTML = `
-                    <div style="padding: 15px; text-align: center;">
-                        <div style="color: #e74c3c; font-size: 24px; margin-bottom: 10px;">⚠️</div>
-                        <h4 style="margin: 0 0 10px 0; color: #e74c3c;">Error cargando KML</h4>
-                        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
-                            ${error.message}
-                        </p>
-                        <button onclick="window.location.reload()" style="padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            Reintentar
-                        </button>
-                    </div>
-                `;
+                document.getElementById('loader').innerHTML = 
+                    '<div style="color: #e74c3c; margin-bottom: 10px;">⚠️ Error cargando KML</div>' +
+                    '<div style="margin-top: 10px; font-size: 12px; color: #666;">' + error.message + '</div>' +
+                    '<button onclick="window.location.reload()" style="margin-top: 15px; padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Reintentar</button>';
             });
         
         // Función para generar colores
         function getColorForIndex(index) {
             const colors = [
                 '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
-                '#1abc9c', '#d35400', '#c0392b', '#16a085', '#8e44ad'
+                '#1abc9c', '#16a085', '#8e44ad', '#2c3e50', '#27ae60'
             ];
             return colors[index % colors.length];
         }
+        
+        // --- MANEJO DEL MENÚ ---
+        const menu = document.getElementById('crime-menu');
+        const openMenuBtn = document.getElementById('openMenuBtn');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const eventCounter = document.getElementById('eventCounter');
+        
+        // Configurar fecha actual
+        document.getElementById('fecha').valueAsDate = new Date();
+        
+        // Configurar hora actual
+        const now = new Date();
+        const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
+                          now.getMinutes().toString().padStart(2, '0');
+        document.getElementById('hora').value = timeString;
+        
+        // Abrir menú
+        openMenuBtn.addEventListener('click', function() {
+            menu.style.display = 'block';
+            openMenuBtn.style.display = 'none';
+        });
+        
+        // Cerrar menú
+        closeMenuBtn.addEventListener('click', function() {
+            menu.style.display = 'none';
+            openMenuBtn.style.display = 'flex';
+        });
+        
+        // Cerrar menú al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            if (!menu.contains(event.target) && event.target !== openMenuBtn) {
+                menu.style.display = 'none';
+                openMenuBtn.style.display = 'flex';
+            }
+        });
+        
+        // --- GUARDAR EVENTO ---
+        saveBtn.addEventListener('click', function() {
+            const tipo = document.getElementById('tipo').value;
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
+            const descripcion = document.getElementById('descripcion').value;
+            const victima = document.getElementById('victima').value;
+            const danos = document.getElementById('danos').value;
+            const contacto = document.getElementById('contacto').value;
+            
+            // Validaciones
+            if (!tipo) {
+                alert('Por favor, seleccione una tipología');
+                return;
+            }
+            
+            if (!fecha) {
+                alert('Por favor, ingrese la fecha');
+                return;
+            }
+            
+            if (!hora) {
+                alert('Por favor, ingrese la hora');
+                return;
+            }
+            
+            if (currentMarker) {
+                const lat = currentMarker.getLatLng().lat;
+                const lng = currentMarker.getLatLng().lng;
+                
+                // Determinar color según tipo
+                let markerColor = '#e74c3c'; // Rojo por defecto
+                if (tipo.includes('Sospechosa')) markerColor = '#f39c12'; // Naranja
+                if (tipo.includes('Abigeato')) markerColor = '#8e44ad'; // Violeta
+                if (tipo.includes('Vandalismo')) markerColor = '#d35400'; // Marrón
+                if (tipo.includes('Otro')) markerColor = '#7f8c8d'; // Gris
+                
+                // Crear marcador con ícono según tipo
+                const marker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'crime-marker',
+                        html: `<div style="background-color: ${markerColor}; color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 2px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.5); font-weight: bold;">!</div>`
+                    })
+                }).addTo(markers);
+                
+                // Contenido del popup
+                let popupContent = `
+                    <div style="max-width: 280px;">
+                        <div style="color: ${markerColor}; font-weight: bold; margin-bottom: 5px; font-size: 16px;">${tipo}</div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+                            📅 ${fecha} | 🕒 ${hora}
+                        </div>
+                `;
+                
+                if (victima) {
+                    popupContent += `<div style="font-size: 12px; margin-bottom: 3px;"><strong>Víctima:</strong> ${victima}</div>`;
+                }
+                
+                if (danos) {
+                    popupContent += `<div style="font-size: 12px; margin-bottom: 3px;"><strong>Daños:</strong> ${danos}</div>`;
+                }
+                
+                if (descripcion) {
+                    popupContent += `<hr style="margin: 8px 0;">
+                                    <div style="font-size: 12px; margin-bottom: 5px;"><strong>Descripción:</strong></div>
+                                    <div style="font-size: 11px; color: #555;">${descripcion}</div>`;
+                }
+                
+                if (contacto) {
+                    popupContent += `<hr style="margin: 8px 0;">
+                                    <div style="font-size: 11px; color: #3498db;"><strong>Contacto:</strong> ${contacto}</div>`;
+                }
+                
+                popupContent += `
+                        <hr style="margin: 8px 0;">
+                        <div style="font-size: 10px; color: #999;">
+                            Coordenadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
+                            Registrado: ${new Date().toLocaleString()}
+                        </div>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                
+                // Incrementar contador
+                eventCount++;
+                updateEventCounter();
+                
+                // Guardar en localStorage (para posterior exportación)
+                saveToLocalStorage({
+                    id: Date.now(),
+                    tipo: tipo,
+                    fecha: fecha,
+                    hora: hora,
+                    lat: lat,
+                    lng: lng,
+                    descripcion: descripcion,
+                    victima: victima,
+                    danos: danos,
+                    contacto: contacto,
+                    timestamp: new Date().toISOString()
+                });
+                
+                console.log('Evento guardado:', { 
+                    tipo, fecha, hora, lat, lng, 
+                    descripcion, victima, danos, contacto 
+                });
+                
+                // Cerrar menú y limpiar formulario
+                menu.style.display = 'none';
+                openMenuBtn.style.display = 'flex';
+                clearForm();
+                
+                // Mostrar mensaje de éxito
+                L.popup()
+                    .setLatLng([lat, lng])
+                    .setContent(`
+                        <div style="padding: 10px; text-align: center;">
+                            <div style="color: #27ae60; font-size: 24px; margin-bottom: 10px;">✓</div>
+                            <div style="font-weight: bold;">Reporte guardado</div>
+                        </div>
+                    `)
+                    .openOn(map);
+                
+                setTimeout(() => map.closePopup(), 1500);
+                
+            } else {
+                alert('Por favor, seleccione una ubicación en el mapa primero');
+            }
+        });
+        
+        // --- FUNCIONES AUXILIARES ---
+        function updateEventCounter() {
+            eventCounter.textContent = `Eventos: ${eventCount}`;
+            eventCounter.style.display = 'block';
+        }
+        
+        function saveToLocalStorage(eventData) {
+            // Obtener eventos existentes
+            let events = JSON.parse(localStorage.getItem('chascomusEvents') || '[]');
+            
+            // Agregar nuevo evento
+            events.push(eventData);
+            
+            // Guardar de nuevo
+            localStorage.setItem('chascomusEvents', JSON.stringify(events));
+        }
+        
+        function clearForm() {
+            document.getElementById('descripcion').value = '';
+            document.getElementById('victima').value = '';
+            document.getElementById('danos').value = '';
+            document.getElementById('contacto').value = '';
+            document.getElementById('fecha').valueAsDate = new Date();
+            
+            const now = new Date();
+            const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
+                              now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('hora').value = timeString;
+            
+            currentMarker = null;
+        }
+        
+        // --- INTERACCIÓN CON EL MAPA ---
+        map.on('click', function(e) {
+            const { lat, lng } = e.latlng;
+            
+            // Remover marcador anterior si existe
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+            }
+            
+            // Crear nuevo marcador temporal (verde)
+            currentMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'temp-marker',
+                    html: `<div style="background-color: #2ecc71; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);">📍</div>`
+                })
+            }).addTo(map);
+            
+            // Mostrar coordenadas
+            currentMarker.bindPopup(`
+                <div style="text-align: center; padding: 5px;">
+                    <div style="font-size: 12px; margin-bottom: 5px;">📍 Ubicación seleccionada</div>
+                    <div style="font-size: 11px; color: #666;">
+                        ${lat.toFixed(6)}, ${lng.toFixed(6)}
+                    </div>
+                    <div style="font-size: 10px; color: #999; margin-top: 5px;">
+                        Ahora complete el formulario
+                    </div>
+                </div>
+            `).openPopup();
+            
+            // Abrir menú automáticamente
+            menu.style.display = 'block';
+            openMenuBtn.style.display = 'none';
+        });
         
         // --- CONTROL DE CAPAS ---
         const baseMaps = { 
@@ -412,7 +711,7 @@
         
         const overlayMaps = {
             "Circunscripciones": kmlLayer,
-            "Eventos": markers
+            "Eventos Reportados": markers
         };
         
         L.control.layers(baseMaps, overlayMaps, { 
@@ -420,137 +719,63 @@
             position: 'topright'
         }).addTo(map);
         
-        // --- LÓGICA DE EVENTOS ---
-        function saveEvent(lat, lng) {
-            const tipo = document.getElementById('tipo').value;
-            const obs = document.getElementById('obs').value;
-            const hora = document.getElementById('hora').value;
-
-            // Crear marcador
-            const marker = L.marker([lat, lng], {
-                icon: L.divIcon({
-                    className: 'custom-marker',
-                    html: `<div style="background-color: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);">!</div>`
-                })
-            }).addTo(markers);
-            
-            marker.bindPopup(`
-                <div style="max-width: 250px;">
-                    <b style="color: #e74c3c;">${tipo}</b><br>
-                    <small>Hora: ${hora}</small><br>
-                    <small>Coords: ${lat.toFixed(4)}, ${lng.toFixed(4)}</small>
-                    <hr style="margin: 5px 0;">
-                    <div style="font-size: 12px;">${obs || 'Sin observaciones'}</div>
-                    <div style="font-size: 10px; color: #666; margin-top: 5px;">
-                        ${new Date().toLocaleDateString()}
-                    </div>
-                </div>
-            `).openPopup();
-            
-            console.log('Evento guardado:', { lat, lng, tipo, hora, obs });
-            map.closePopup();
-        }
-        
-        // Manejar clics en el mapa
-        map.on('click', function(e) {
-            const { lat, lng } = e.latlng;
-            const now = new Date();
-            const timeString = now.toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: false 
-            });
-
-            const formHtml = `
-                <div class="form-container">
-                    <h3 style="margin:0 0 10px 0; color:#2c3e50;">Nuevo Reporte</h3>
-                    <div style="font-size: 11px; color: #666; margin-bottom: 10px;">
-                        ${lat.toFixed(6)}, ${lng.toFixed(6)}
-                    </div>
-                    
-                    <label>Tipología</label>
-                    <select id="tipo">
-                        <option value="Robo/Hurto">Robo/Hurto</option>
-                        <option value="Presencia Sospechosa">Presencia Sospechosa</option>
-                        <option value="Abigeato">Abigeato (Ganado)</option>
-                        <option value="Vandalismo">Vandalismo</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-
-                    <label>Hora del evento</label>
-                    <input type="time" id="hora" value="${timeString}">
-
-                    <label>Observaciones</label>
-                    <textarea id="obs" rows="3" placeholder="Descripción del evento..."></textarea>
-
-                    <button class="btn-save" onclick="saveEvent(${lat}, ${lng})">GUARDAR EVENTO</button>
-                </div>
-            `;
-
-            L.popup()
-                .setLatLng([lat, lng])
-                .setContent(formHtml)
-                .openOn(map);
-        });
-        
         // --- CONTROLES PERSONALIZADOS ---
         // Control para limpiar marcadores
         const clearControl = L.control({position: 'bottomright'});
         clearControl.onAdd = function() {
-            const div = L.DomUtil.create('div', 'leaflet-control-custom');
-            div.innerHTML = '<a href="#" title="Limpiar marcadores">🗑️ Limpiar eventos</a>';
+            const div = L.DomUtil.create('div', 'leaflet-control-clear');
+            div.innerHTML = '<span>🗑️ Limpiar eventos</span>';
             
-            L.DomEvent.on(div, 'click', function(e) {
-                L.DomEvent.stopPropagation(e);
+            div.onclick = function() {
                 if (markers.getLayers().length > 0) {
-                    if (confirm('¿Eliminar todos los marcadores de eventos?')) {
+                    if (confirm('¿Eliminar todos los eventos reportados?')) {
                         markers.clearLayers();
+                        eventCount = 0;
+                        updateEventCounter();
+                        localStorage.removeItem('chascomusEvents');
+                        L.popup()
+                            .setLatLng(map.getCenter())
+                            .setContent('<div style="padding: 10px;">Eventos eliminados</div>')
+                            .openOn(map);
+                        setTimeout(() => map.closePopup(), 1500);
                     }
                 }
-            });
+            };
             
             return div;
         };
         clearControl.addTo(map);
         
-        // Control para recargar
-        const reloadControl = L.control({position: 'bottomright'});
-        reloadControl.onAdd = function() {
-            const div = L.DomUtil.create('div', 'leaflet-control-custom');
-            div.innerHTML = '<a href="#" title="Recargar todo">🔄 Recargar</a>';
-            
-            L.DomEvent.on(div, 'click', function(e) {
-                L.DomEvent.stopPropagation(e);
-                window.location.reload();
-            });
-            
-            return div;
-        };
-        reloadControl.addTo(map);
-        
         // Control para mostrar/ocultar KML
-        const toggleKmlControl = L.control({position: 'bottomright'});
-        toggleKmlControl.onAdd = function() {
-            const div = L.DomUtil.create('div', 'leaflet-control-custom');
-            div.innerHTML = '<a href="#" title="Mostrar/ocultar circunscripciones">🗺️ Circunscripciones</a>';
+        const toggleControl = L.control({position: 'bottomright'});
+        toggleControl.onAdd = function() {
+            const div = L.DomUtil.create('div', 'leaflet-control-clear');
+            div.innerHTML = '<span>🗺️ Circunscripciones</span>';
+            div.style.marginBottom = '50px';
             
-            L.DomEvent.on(div, 'click', function(e) {
-                L.DomEvent.stopPropagation(e);
-                if (map.hasLayer(kmlLayer)) {
+            let isVisible = true;
+            div.onclick = function() {
+                if (isVisible) {
                     map.removeLayer(kmlLayer);
-                    div.innerHTML = '<a href="#" title="Mostrar circunscripciones">🗺️ Mostrar</a>';
+                    div.innerHTML = '<span>🗺️ Mostrar</span>';
+                    isVisible = false;
                 } else {
                     map.addLayer(kmlLayer);
-                    div.innerHTML = '<a href="#" title="Ocultar circunscripciones">🗺️ Ocultar</a>';
+                    div.innerHTML = '<span>🗺️ Ocultar</span>';
+                    isVisible = true;
                 }
-            });
+            };
             
             return div;
         };
-        toggleKmlControl.addTo(map);
+        toggleControl.addTo(map);
         
-        // Hacer funciones globales
-        window.saveEvent = saveEvent;
+        // Cargar eventos guardados al iniciar
+        window.addEventListener('load', function() {
+            const savedEvents = JSON.parse(localStorage.getItem('chascomusEvents') || '[]');
+            eventCount = savedEvents.length;
+            updateEventCounter();
+        });
 
     </script>
 </body>
