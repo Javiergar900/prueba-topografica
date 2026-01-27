@@ -3,532 +3,1122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chascomús Rural - Seguridad</title>
+    <title>Reportes Chascomús - Seguridad Rural</title>
     
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        #map { height: 100vh; width: 100%; }
-        
-        /* Estilos del formulario móvil */
-        .form-container {
-            padding: 10px;
-            min-width: 200px;
-        }
-        .form-container label {
-            display: block;
-            font-weight: bold;
-            margin-top: 8px;
-            font-size: 12px;
-        }
-        .form-container input, .form-container select, .form-container textarea {
-            width: 100%;
-            padding: 8px;
-            margin-top: 4px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        .btn-save {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            margin-top: 15px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        /* Ajuste visual del popup */
-        .leaflet-popup-content-wrapper { border-radius: 8px; }
-
-        /* Botón de Ayuda/Instrucción flotante */
-        .info-floating {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 13px;
-            pointer-events: none;
-        }
-        
-        /* Estilo para los polígonos del KML - BORDE NEGRO Y TOTALMENTE TRANSPARENTE */
-        .kml-polygon {
-            fillColor: '#000000'; /* No importa porque es transparente */
-            color: '#000000'; /* Borde negro */
-            weight: 2;
-            opacity: 0.8;
-            fillOpacity: 0; /* TOTALMENTE TRANSPARENTE */
-        }
-        
-        .kml-polygon:hover {
-            color: '#e74c3c'; /* Borde rojo al hacer hover */
-            weight: 3;
-            fillOpacity: 0; /* Mantener transparente */
-        }
-        
-        /* Controles personalizados */
-        .leaflet-control-custom {
-            background: white;
-            border-radius: 4px;
+        * {
+            margin: 0;
             padding: 0;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        /* App Container */
+        #app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header simple */
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 15px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .app-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .app-subtitle {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+        
+        /* Contenido principal */
+        .content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Mapa (ocupa toda la pantalla por defecto) */
+        #map {
+            flex: 1;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        /* Formulario flotante */
+        .form-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            position: relative;
+        }
+        
+        .form-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .form-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .close-form {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+        }
+        
+        .form-body {
+            padding: 20px;
+        }
+        
+        /* Categorías como botones grandes */
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .category-btn {
+            padding: 15px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .category-btn:hover {
+            border-color: #3498db;
+            background: #f0f7ff;
+        }
+        
+        .category-btn.active {
+            border-color: #e74c3c;
+            background: #ffeaea;
+            color: #e74c3c;
+        }
+        
+        .category-icon {
+            font-size: 20px;
+        }
+        
+        .category-label {
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        /* Campos del formulario */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border 0.3s;
+            font-family: inherit;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* Ubicación */
+        .location-display {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
             margin-bottom: 10px;
         }
         
-        .leaflet-control-custom a {
-            display: block;
-            padding: 8px 12px;
-            text-decoration: none;
-            color: #333;
-            font-size: 12px;
+        .location-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            width: 100%;
+            justify-content: center;
         }
         
-        .leaflet-control-custom a:hover {
-            background: #f8f9fa;
+        /* Botones principales */
+        .btn {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        /* Botón flotante para nuevo reporte */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            cursor: pointer;
+            z-index: 900;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
+        }
+        
+        /* Botón para ver reportes */
+        .view-reports-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            color: #2c3e50;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 900;
+        }
+        
+        /* Mini lista de reportes */
+        .reports-mini {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            width: 300px;
+            max-height: 70vh;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+        
+        .reports-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .reports-list {
+            padding: 10px;
+        }
+        
+        .report-mini-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        
+        .report-mini-item:last-child {
+            border-bottom: none;
+        }
+        
+        .report-mini-type {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        
+        .report-mini-desc {
+            font-size: 13px;
+            margin: 5px 0;
         }
         
         /* Loader */
         .loader {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.3);
-            text-align: center;
-            display: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
         }
         
         .loader-spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border-top: 4px solid #e74c3c;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
         }
         
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { bottom: 20px; opacity: 0; }
+            to { bottom: 80px; opacity: 1; }
+        }
+        
+        /* Popup personalizado */
+        .leaflet-popup-content {
+            min-width: 250px !important;
+        }
+        
+        /* Para Google Sheets */
+        .sheets-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+            border-left: 4px solid #34a853;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-container {
+                width: 95%;
+                max-height: 85vh;
+            }
+            
+            .categories {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .reports-mini {
+                width: 90%;
+                left: 5%;
+                right: 5%;
+            }
+        }
     </style>
 </head>
 <body>
-
-    <div class="info-floating">Toca el mapa para registrar un evento</div>
-    <div id="map"></div>
-    <div id="loader" class="loader">
+    <div id="app">
+        <!-- Header simple -->
+        <header class="header">
+            <div class="app-title">Reportes Chascomús</div>
+            <div class="app-subtitle">Seguridad Rural - Reporte Ciudadano</div>
+        </header>
+        
+        <!-- Contenido principal -->
+        <div class="content">
+            <div id="map"></div>
+        </div>
+        
+        <!-- Botón flotante para nuevo reporte -->
+        <button class="fab" onclick="showForm()">
+            <i class="fas fa-plus"></i>
+        </button>
+        
+        <!-- Botón para ver reportes -->
+        <button class="view-reports-btn" onclick="toggleReports()" title="Ver mis reportes">
+            <i class="fas fa-list"></i>
+        </button>
+    </div>
+    
+    <!-- Formulario flotante -->
+    <div class="form-overlay" id="formOverlay">
+        <div class="form-container">
+            <div class="form-header">
+                <button class="close-form" onclick="hideForm()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="form-title">Nuevo Reporte</div>
+                <div class="form-subtitle">Compartí información de seguridad</div>
+            </div>
+            
+            <div class="form-body">
+                <!-- Categorías -->
+                <div class="form-group">
+                    <label class="form-label">¿Qué pasó?</label>
+                    <div class="categories" id="categories">
+                        <div class="category-btn" data-category="robo">
+                            <i class="fas fa-gem category-icon"></i>
+                            <span class="category-label">Robo/Hurto</span>
+                        </div>
+                        <div class="category-btn" data-category="sospechoso">
+                            <i class="fas fa-user-secret category-icon"></i>
+                            <span class="category-label">Persona Sospechosa</span>
+                        </div>
+                        <div class="category-btn" data-category="animales">
+                            <i class="fas fa-cow category-icon"></i>
+                            <span class="category-label">Animales/Ganado</span>
+                        </div>
+                        <div class="category-btn" data-category="vandalismo">
+                            <i class="fas fa-spray-can category-icon"></i>
+                            <span class="category-label">Vandalismo</span>
+                        </div>
+                        <div class="category-btn" data-category="accidente">
+                            <i class="fas fa-car-crash category-icon"></i>
+                            <span class="category-label">Accidente</span>
+                        </div>
+                        <div class="category-btn" data-category="incendio">
+                            <i class="fas fa-fire category-icon"></i>
+                            <span class="category-label">Incendio</span>
+                        </div>
+                        <div class="category-btn" data-category="otros">
+                            <i class="fas fa-ellipsis-h category-icon"></i>
+                            <span class="category-label">Otros</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detalles específicos -->
+                <div class="form-group" id="detailsGroup" style="display: none;">
+                    <label class="form-label" id="detailsLabel">Detalles</label>
+                    <select class="form-select" id="eventDetails">
+                        <!-- Se llena dinámicamente según categoría -->
+                    </select>
+                </div>
+                
+                <!-- Descripción -->
+                <div class="form-group">
+                    <label class="form-label">Descripción (opcional)</label>
+                    <textarea class="form-textarea" id="description" 
+                              placeholder="Ej: Hombre con remera roja, moto azul, etc..."></textarea>
+                </div>
+                
+                <!-- Ubicación -->
+                <div class="form-group">
+                    <label class="form-label">Ubicación</label>
+                    <div class="location-display" id="locationDisplay">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="locationText">Tocá el mapa para seleccionar ubicación</span>
+                    </div>
+                    <button type="button" class="location-btn" onclick="getMyLocation()">
+                        <i class="fas fa-location-crosshairs"></i>
+                        Usar mi ubicación actual
+                    </button>
+                </div>
+                
+                <!-- Fecha y hora -->
+                <div class="form-group">
+                    <label class="form-label">¿Cuándo pasó?</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <input type="date" class="form-input" id="eventDate" value="">
+                        <input type="time" class="form-input" id="eventTime" value="">
+                    </div>
+                </div>
+                
+                <!-- Información para Google Sheets -->
+                <div class="sheets-info">
+                    <i class="fas fa-info-circle"></i>
+                    Este reporte se guardará localmente y podrás exportarlo a Google Sheets
+                </div>
+                
+                <!-- Botones -->
+                <button class="btn btn-primary" onclick="saveReport()">
+                    <i class="fas fa-paper-plane"></i> Enviar Reporte
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="hideForm()">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mini lista de reportes -->
+    <div class="reports-mini" id="reportsMini">
+        <div class="reports-header">
+            <span>Mis Reportes</span>
+            <button onclick="toggleReports()" style="background:none; border:none; color:white; cursor:pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="reports-list" id="reportsList">
+            <!-- Se llena dinámicamente -->
+        </div>
+    </div>
+    
+    <!-- Loader -->
+    <div class="loader" id="loader">
         <div class="loader-spinner"></div>
-        <div>Cargando circunscripciones...</div>
+        <div style="margin-top: 15px; font-size: 14px; color: #2c3e50;">Cargando mapa de Chascomús...</div>
+    </div>
+    
+    <!-- Toast -->
+    <div class="toast" id="toast" style="display: none;">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage"></span>
     </div>
 
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+    
     <script>
         'use strict';
         
-        const chascomusCoord = [-35.5762, -58.0104];
+        // Configuración
+        const CHASCOMUS_COORD = [-35.5762, -58.0104];
+        let map, markersLayer;
+        let selectedLocation = null;
+        let selectedCategory = null;
+        let reports = JSON.parse(localStorage.getItem('chascomus_reports') || '[]');
         
-        // Inicializar mapa
-        const map = L.map('map', {
-            center: chascomusCoord,
-            zoom: 5,
-            zoomControl: false
-        });
+        // Detalles por categoría (para Google Sheets)
+        const categoryDetails = {
+            robo: [
+                'Robo a vivienda',
+                'Robo a vehículo',
+                'Robo a persona',
+                'Hurto en comercio',
+                'Robo de animales',
+                'Otro robo'
+            ],
+            sospechoso: [
+                'Persona merodeando',
+                'Vehículo sospechoso',
+                'Ruidos extraños',
+                'Persona armada',
+                'Reunión sospechosa',
+                'Otro'
+            ],
+            animales: [
+                'Animales sueltos',
+                'Posible abigeato',
+                'Maltrato animal',
+                'Animal herido',
+                'Fauna silvestre',
+                'Otro'
+            ],
+            vandalismo: [
+                'Pintadas',
+                'Rotura de propiedad',
+                'Incendio provocado',
+                'Daño a cultivos',
+                'Cables cortados',
+                'Otro'
+            ],
+            accidente: [
+                'Accidente vehicular',
+                'Atropello',
+                'Vuelco',
+                'Choque',
+                'Accidente rural',
+                'Otro'
+            ],
+            incendio: [
+                'Incendio forestal',
+                'Incendio de pastizales',
+                'Incendio estructural',
+                'Fuego controlado',
+                'Columnas de humo',
+                'Otro'
+            ],
+            otros: [
+                'Problema vial',
+                'Falta de luz',
+                'Inundación',
+                'Árbol caído',
+                'Basura',
+                'Otro'
+            ]
+        };
         
-        L.control.zoom({ position: 'topright' }).addTo(map);
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', initApp);
         
-        // Capas base
-        const cyclOSM = L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
-            maxZoom: 25, 
-            attribution: '© CyclOSM'
-        }).addTo(map);
+        async function initApp() {
+            // Configurar fecha/hora actual
+            const now = new Date();
+            document.getElementById('eventDate').value = now.toISOString().split('T')[0];
+            document.getElementById('eventTime').value = now.toTimeString().slice(0, 5);
+            
+            // Inicializar mapa
+            initMap();
+            
+            // Cargar KML
+            await loadKML();
+            
+            // Cargar reportes existentes
+            loadExistingReports();
+            
+            // Configurar categorías
+            setupCategories();
+            
+            // Ocultar loader
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+            }, 1500);
+        }
         
-        const esriTopo = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Esri Topo'
-        });
+        function initMap() {
+            map = L.map('map', {
+                center: CHASCOMUS_COORD,
+                zoom: 12,
+                zoomControl: true,
+                zoomControlPos: 'topright'
+            });
+            
+            // Capa base simple
+            L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
+                maxZoom: 20,
+                attribution: '© Chascomús Seguridad'
+            }).addTo(map);
+            
+            // Capa de marcadores
+            markersLayer = L.layerGroup().addTo(map);
+            
+            // Click en el mapa para seleccionar ubicación
+            map.on('click', function(e) {
+                selectedLocation = e.latlng;
+                updateLocationDisplay();
+                showToast('Ubicación seleccionada');
+                
+                // Si el formulario está abierto, mostrar
+                if (document.getElementById('formOverlay').style.display === 'flex') {
+                    showForm();
+                }
+            });
+        }
         
-        // Variables globales
-        let kmlLayer = L.layerGroup();
-        const markers = L.layerGroup().addTo(map);
+        async function loadKML() {
+            const kmlUrl = 'https://raw.githubusercontent.com/Javiergar900/prueba-topografica/main/circunscripciones.kml';
+            
+            try {
+                const response = await fetch(kmlUrl);
+                const kmlText = await response.text();
+                const polygons = parseKML(kmlText);
+                
+                polygons.forEach(polygon => {
+                    L.polygon(polygon.coordinates, {
+                        color: '#2c3e50',
+                        weight: 2,
+                        opacity: 0.5,
+                        fillOpacity: 0.1
+                    })
+                    .bindTooltip(polygon.name, {direction: 'center'})
+                    .addTo(map);
+                });
+                
+            } catch (error) {
+                console.log('KML opcional no cargado');
+            }
+        }
         
-        // --- FUNCIÓN SIMPLIFICADA PARA PARSEAR KML ---
         function parseKML(kmlText) {
-            console.log('Parseando KML...');
             const parser = new DOMParser();
             const kmlDoc = parser.parseFromString(kmlText, 'text/xml');
-            
-            // Buscar todos los polígonos
             const polygons = [];
             const placemarks = kmlDoc.getElementsByTagName('Placemark');
             
-            console.log('Encontrados', placemarks.length, 'placemarks');
-            
             for (let i = 0; i < placemarks.length; i++) {
                 const placemark = placemarks[i];
+                let name = `Zona ${i + 1}`;
                 
-                // Obtener nombre
-                let name = `Circunscripción ${i + 1}`;
                 const nameElements = placemark.getElementsByTagName('name');
                 if (nameElements.length > 0) {
                     name = nameElements[0].textContent;
                 }
                 
-                // Buscar coordenadas en Polygon
-                const polygonsElements = placemark.getElementsByTagName('Polygon');
-                for (let polyElement of polygonsElements) {
-                    const coordElements = polyElement.getElementsByTagName('coordinates');
-                    for (let coordElement of coordElements) {
-                        const coordsText = coordElement.textContent.trim();
-                        const coordsArray = parseCoordinates(coordsText);
-                        
-                        if (coordsArray.length > 2) {
-                            polygons.push({
-                                name: name,
-                                coordinates: coordsArray
-                            });
-                        }
-                    }
-                }
-                
-                // Buscar también en LineString (por si acaso)
-                const linesElements = placemark.getElementsByTagName('LineString');
-                for (let lineElement of linesElements) {
-                    const coordElements = lineElement.getElementsByTagName('coordinates');
-                    for (let coordElement of coordElements) {
-                        const coordsText = coordElement.textContent.trim();
-                        const coordsArray = parseCoordinates(coordsText);
-                        
-                        if (coordsArray.length > 1) {
-                            polygons.push({
-                                name: name,
-                                coordinates: coordsArray,
-                                isLine: true
-                            });
-                        }
+                const coordElements = placemark.getElementsByTagName('coordinates');
+                for (let coordElement of coordElements) {
+                    const coordsText = coordElement.textContent.trim();
+                    const coords = parseCoordinates(coordsText);
+                    
+                    if (coords.length > 2) {
+                        polygons.push({ name, coordinates: coords });
                     }
                 }
             }
             
-            console.log('Polígonos parseados:', polygons.length);
             return polygons;
         }
         
-        // Función auxiliar para parsear coordenadas
-        function parseCoordinates(coordsText) {
-            const coordinates = [];
-            // Separar por espacios o nuevas líneas
-            const coordStrings = coordsText.split(/\s+/);
+        function parseCoordinates(text) {
+            const coords = [];
+            const parts = text.split(/\s+/);
             
-            for (let coordStr of coordStrings) {
-                if (coordStr.trim() === '') continue;
-                
-                const parts = coordStr.split(',');
-                if (parts.length >= 2) {
-                    const lng = parseFloat(parts[0]);
-                    const lat = parseFloat(parts[1]);
-                    
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                        coordinates.push([lat, lng]);
-                    }
+            for (let part of parts) {
+                if (!part.trim()) continue;
+                const [lng, lat] = part.split(',').map(Number);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    coords.push([lat, lng]);
                 }
             }
             
-            return coordinates;
+            return coords;
         }
         
-        // --- CARGAR KML ---
-        const kmlUrl = 'https://raw.githubusercontent.com/Javiergar900/prueba-topografica/6047b52c13c61d55185b69b85e96e507562fdf6e/circunscripciones.kml';
-        
-        // Mostrar loader
-        document.getElementById('loader').style.display = 'block';
-        
-        fetch(kmlUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
-                }
-                return response.text();
-            })
-            .then(kmlText => {
-                console.log('KML descargado exitosamente, tamaño:', kmlText.length, 'bytes');
-                
-                // Parsear el KML
-                const polygons = parseKML(kmlText);
-                
-                if (polygons.length === 0) {
-                    throw new Error('No se encontraron polígonos en el KML');
-                }
-                
-                // Crear polígonos en el mapa - BORDE NEGRO Y TRANSPARENTE
-                polygons.forEach((polygon, index) => {
-                    let layer;
-                    
-                    if (polygon.isLine) {
-                        // Crear línea
-                        layer = L.polyline(polygon.coordinates, {
-                            color: '#000000', // Negro
-                            weight: 2,
-                            opacity: 0.8
-                        });
-                    } else {
-                        // Crear polígono - BORDE NEGRO Y TOTALMENTE TRANSPARENTE
-                        layer = L.polygon(polygon.coordinates, {
-                            className: 'kml-polygon',
-                            fillColor: '#000000', // No importa porque es transparente
-                            color: '#000000', // Borde negro
-                            weight: 2,
-                            opacity: 0.8,
-                            fillOpacity: 0 // TOTALMENTE TRANSPARENTE
-                        });
-                    }
-                    
-                    // Añadir popup y tooltip
-                    layer.bindPopup(`<b>${polygon.name}</b>`);
-                    layer.bindTooltip(polygon.name, {
-                        permanent: false,
-                        direction: 'center'
+        function setupCategories() {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Quitar activo de todos
+                    document.querySelectorAll('.category-btn').forEach(b => {
+                        b.classList.remove('active');
                     });
                     
-                    // Efecto hover
-                    layer.on('mouseover', function() {
-                        if (!polygon.isLine) {
-                            this.setStyle({
-                                weight: 3,
-                                color: '#e74c3c', // Rojo al hover
-                                fillOpacity: 0 // Mantener transparente
-                            });
-                        } else {
-                            this.setStyle({
-                                weight: 3,
-                                color: '#e74c3c' // Rojo al hover
-                            });
-                        }
-                    });
+                    // Activar este
+                    this.classList.add('active');
+                    selectedCategory = this.dataset.category;
                     
-                    layer.on('mouseout', function() {
-                        if (!polygon.isLine) {
-                            this.setStyle({
-                                weight: 2,
-                                color: '#000000', // Negro
-                                fillOpacity: 0 // Mantener transparente
-                            });
-                        } else {
-                            this.setStyle({
-                                weight: 2,
-                                color: '#000000' // Negro
-                            });
-                        }
-                    });
-                    
-                    // Añadir a la capa
-                    kmlLayer.addLayer(layer);
+                    // Mostrar detalles específicos
+                    showCategoryDetails();
                 });
+            });
+        }
+        
+        function showCategoryDetails() {
+            const detailsGroup = document.getElementById('detailsGroup');
+            const select = document.getElementById('eventDetails');
+            
+            if (selectedCategory && categoryDetails[selectedCategory]) {
+                detailsGroup.style.display = 'block';
+                select.innerHTML = '<option value="">Seleccionar tipo específico</option>';
                 
-                // Añadir capa al mapa
-                map.addLayer(kmlLayer);
-                
-                // Calcular bounds y ajustar vista
-                if (kmlLayer.getLayers().length > 0) {
-                    const bounds = L.latLngBounds([]);
-                    kmlLayer.eachLayer(layer => {
-                        if (layer.getBounds) {
-                            bounds.extend(layer.getBounds());
-                        }
-                    });
+                categoryDetails[selectedCategory].forEach(detail => {
+                    const option = document.createElement('option');
+                    option.value = detail;
+                    option.textContent = detail;
+                    select.appendChild(option);
+                });
+            } else {
+                detailsGroup.style.display = 'none';
+            }
+        }
+        
+        function getMyLocation() {
+            if (!navigator.geolocation) {
+                showToast('Tu navegador no soporta geolocalización', 'error');
+                return;
+            }
+            
+            showToast('Obteniendo tu ubicación...');
+            
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    selectedLocation = L.latLng(
+                        position.coords.latitude,
+                        position.coords.longitude
+                    );
                     
-                    if (bounds.isValid()) {
-                        map.fitBounds(bounds.pad(0.1));
-                        console.log('Mapa ajustado a bounds:', bounds);
-                    }
+                    map.setView(selectedLocation, 16);
+                    updateLocationDisplay();
+                    showToast('Ubicación obtenida');
+                },
+                error => {
+                    showToast('No se pudo obtener la ubicación', 'error');
                 }
-                
-                // Ocultar loader
-                document.getElementById('loader').style.display = 'none';
-                
-
-                
-            })
-            .catch(error => {
-                console.error('Error cargando KML:', error);
-                
-                // Mostrar mensaje de error
-                document.getElementById('loader').innerHTML = `
-                    <div style="padding: 15px; text-align: center;">
-                        <div style="color: #e74c3c; font-size: 24px; margin-bottom: 10px;">⚠️</div>
-                        <h4 style="margin: 0 0 10px 0; color: #e74c3c;">Error cargando KML</h4>
-                        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
-                            ${error.message}
-                        </p>
-                        <button onclick="window.location.reload()" style="padding: 8px 15px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            Reintentar
-                        </button>
+            );
+        }
+        
+        function updateLocationDisplay() {
+            if (selectedLocation) {
+                const text = `${selectedLocation.lat.toFixed(5)}, ${selectedLocation.lng.toFixed(5)}`;
+                document.getElementById('locationText').textContent = text;
+                document.getElementById('locationDisplay').style.color = '#27ae60';
+            }
+        }
+        
+        function showForm() {
+            document.getElementById('formOverlay').style.display = 'flex';
+            
+            // Si hay ubicación seleccionada, centrar ahí
+            if (selectedLocation) {
+                map.setView(selectedLocation, 16);
+            }
+        }
+        
+        function hideForm() {
+            document.getElementById('formOverlay').style.display = 'none';
+            resetForm();
+        }
+        
+        function resetForm() {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('detailsGroup').style.display = 'none';
+            document.getElementById('description').value = '';
+            selectedCategory = null;
+            selectedLocation = null;
+            document.getElementById('locationText').textContent = 'Tocá el mapa para seleccionar ubicación';
+            document.getElementById('locationDisplay').style.color = '';
+        }
+        
+        function saveReport() {
+            // Validaciones básicas
+            if (!selectedCategory) {
+                showToast('Seleccioná una categoría', 'error');
+                return;
+            }
+            
+            if (!selectedLocation) {
+                showToast('Seleccioná una ubicación en el mapa', 'error');
+                return;
+            }
+            
+            // Obtener datos
+            const category = document.querySelector('.category-btn.active .category-label').textContent;
+            const details = document.getElementById('eventDetails').value || 'No especificado';
+            const description = document.getElementById('description').value.trim() || 'Sin descripción';
+            const date = document.getElementById('eventDate').value;
+            const time = document.getElementById('eventTime').value;
+            
+            // Crear reporte
+            const report = {
+                id: Date.now(),
+                category: category,
+                details: details,
+                description: description,
+                date: date,
+                time: time,
+                location: {
+                    lat: selectedLocation.lat,
+                    lng: selectedLocation.lng
+                },
+                timestamp: new Date().toISOString()
+            };
+            
+            // Guardar localmente
+            reports.unshift(report);
+            localStorage.setItem('chascomus_reports', JSON.stringify(reports));
+            
+            // Agregar marcador
+            addMarker(report);
+            
+            // Mostrar confirmación
+            showToast('Reporte guardado ✓');
+            
+            // Cerrar formulario
+            hideForm();
+            
+            // Actualizar lista
+            updateReportsList();
+            
+            // Para Google Sheets (estructura lista)
+            console.log('Reporte para Google Sheets:', {
+                'Categoría': category,
+                'Detalles': details,
+                'Descripción': description,
+                'Fecha': date,
+                'Hora': time,
+                'Latitud': selectedLocation.lat,
+                'Longitud': selectedLocation.lng,
+                'Timestamp': report.timestamp
+            });
+        }
+        
+        function addMarker(report) {
+            // Color por categoría
+            const colors = {
+                'Robo/Hurto': '#e74c3c',
+                'Persona Sospechosa': '#f39c12',
+                'Animales/Ganado': '#27ae60',
+                'Vandalismo': '#8e44ad',
+                'Accidente': '#3498db',
+                'Incendio': '#d35400',
+                'Otros': '#7f8c8d'
+            };
+            
+            const color = colors[report.category] || '#2c3e50';
+            
+            const marker = L.marker([report.location.lat, report.location.lng], {
+                icon: L.divIcon({
+                    className: 'report-marker',
+                    html: `<div style="background: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>`
+                })
+            }).addTo(markersLayer);
+            
+            marker.bindPopup(`
+                <div style="min-width: 200px;">
+                    <h4 style="margin:0 0 5px 0; color:${color};">${report.category}</h4>
+                    <p style="margin:5px 0; font-size:14px;">${report.description}</p>
+                    <hr style="margin:8px 0;">
+                    <div style="font-size:12px; color:#666;">
+                        <div><strong>Tipo:</strong> ${report.details}</div>
+                        <div><strong>Fecha:</strong> ${report.date} ${report.time}</div>
+                        <div><strong>Coords:</strong> ${report.location.lat.toFixed(5)}, ${report.location.lng.toFixed(5)}</div>
+                    </div>
+                </div>
+            `);
+            
+            marker.reportId = report.id;
+        }
+        
+        function loadExistingReports() {
+            reports.forEach(report => addMarker(report));
+            updateReportsList();
+        }
+        
+        function updateReportsList() {
+            const container = document.getElementById('reportsList');
+            
+            if (reports.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:30px 20px; color:#999;">
+                        <i class="fas fa-inbox" style="font-size:40px; margin-bottom:10px;"></i>
+                        <p>No hay reportes aún</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            reports.slice(0, 10).forEach(report => {
+                html += `
+                    <div class="report-mini-item" onclick="viewReport(${report.id})">
+                        <div class="report-mini-type">${report.category}</div>
+                        <div class="report-mini-desc">${report.description.substring(0, 60)}${report.description.length > 60 ? '...' : ''}</div>
+                        <div style="font-size:11px; color:#999;">
+                            ${report.date} ${report.time}
+                        </div>
                     </div>
                 `;
             });
-        
-        // --- CONTROL DE CAPAS ---
-        const baseMaps = { 
-            "Mapa 1": cyclOSM, 
-            "Mapa 2": esriTopo 
-        };
-        
-        const overlayMaps = {
-
-        };
-        
-        L.control.layers(baseMaps, overlayMaps, { 
-            collapsed: true,
-            position: 'topright'
-        }).addTo(map);
-        
-        // --- LÓGICA DE EVENTOS ---
-        function saveEvent(lat, lng) {
-            const tipo = document.getElementById('tipo').value;
-            const obs = document.getElementById('obs').value;
-            const hora = document.getElementById('hora').value;
-
-            // Crear marcador
-            const marker = L.marker([lat, lng], {
-                icon: L.divIcon({
-                    className: 'custom-marker',
-                    html: `<div style="background-color: #e74c3c; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);">!</div>`
-                })
-            }).addTo(markers);
             
-            marker.bindPopup(`
-                <div style="max-width: 250px;">
-                    <b style="color: #e74c3c;">${tipo}</b><br>
-                    <small>Hora: ${hora}</small><br>
-                    <small>Coords: ${lat.toFixed(4)}, ${lng.toFixed(4)}</small>
-                    <hr style="margin: 5px 0;">
-                    <div style="font-size: 12px;">${obs || 'Sin observaciones'}</div>
-                    <div style="font-size: 10px; color: #666; margin-top: 5px;">
-                        ${new Date().toLocaleDateString()}
+            if (reports.length > 10) {
+                html += `
+                    <div style="text-align:center; padding:10px; color:#3498db; font-size:13px;">
+                        +${reports.length - 10} reportes más
                     </div>
-                </div>
-            `).openPopup();
+                `;
+            }
             
-            console.log('Evento guardado:', { lat, lng, tipo, hora, obs });
-            map.closePopup();
+            container.innerHTML = html;
         }
         
-        // Manejar clics en el mapa
-        map.on('click', function(e) {
-            const { lat, lng } = e.latlng;
-            const now = new Date();
-            const timeString = now.toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: false 
-            });
-
-            const formHtml = `
-                <div class="form-container">
-                    <h3 style="margin:0 0 10px 0; color:#2c3e50;">Nuevo Reporte</h3>
-                    <div style="font-size: 11px; color: #666; margin-bottom: 10px;">
-                        ${lat.toFixed(6)}, ${lng.toFixed(6)}
-                    </div>
-                    
-                    <label>Tipología</label>
-                    <select id="tipo">
-                        <option value="Robo/Hurto">Robo/Hurto</option>
-                        <option value="Presencia Sospechosa">Presencia Sospechosa</option>
-                        <option value="Abigeato">Abigeato (Ganado)</option>
-                        <option value="Vandalismo">Vandalismo</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-
-                    <label>Hora del evento</label>
-                    <input type="time" id="hora" value="${timeString}">
-
-                    <label>Observaciones</label>
-                    <textarea id="obs" rows="3" placeholder="Descripción del evento..."></textarea>
-
-                    <button class="btn-save" onclick="saveEvent(${lat}, ${lng})">GUARDAR EVENTO</button>
-                </div>
-            `;
-
-            L.popup()
-                .setLatLng([lat, lng])
-                .setContent(formHtml)
-                .openOn(map);
-        });
-        
-        // --- CONTROLES PERSONALIZADOS ---
-        // Control para limpiar marcadores
-        const clearControl = L.control({position: 'bottomright'});
-        clearControl.onAdd = function() {
-            const div = L.DomUtil.create('div', 'leaflet-control-custom');
+        function viewReport(id) {
+            const report = reports.find(r => r.id === id);
+            if (!report) return;
             
-            L.DomEvent.on(div, 'click', function(e) {
-                L.DomEvent.stopPropagation(e);
-                if (markers.getLayers().length > 0) {
-                    if (confirm('¿Eliminar todos los marcadores de eventos?')) {
-                        markers.clearLayers();
-                    }
+            // Centrar en el marcador
+            map.setView([report.location.lat, report.location.lng], 16);
+            
+            // Buscar y abrir popup del marcador
+            markersLayer.eachLayer(layer => {
+                if (layer.reportId === id) {
+                    layer.openPopup();
                 }
             });
             
-            return div;
-        };
-        clearControl.addTo(map);
+            // Cerrar lista
+            toggleReports();
+        }
         
-        // Control para recargar
-        const reloadControl = L.control({position: 'bottomright'});
-        reloadControl.onAdd = function() {
-            const div = L.DomUtil.create('div', 'leaflet-control-custom');
-            div.innerHTML = '<a href="#" title="Recargar todo">🔄 Recargar</a>';
+        function toggleReports() {
+            const mini = document.getElementById('reportsMini');
+            mini.style.display = mini.style.display === 'block' ? 'none' : 'block';
+            if (mini.style.display === 'block') {
+                updateReportsList();
+            }
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = toast.querySelector('i');
+            const text = document.getElementById('toastMessage');
             
-            L.DomEvent.on(div, 'click', function(e) {
-                L.DomEvent.stopPropagation(e);
-                window.location.reload();
+            text.textContent = message;
+            
+            if (type === 'error') {
+                toast.style.background = '#e74c3c';
+                icon.className = 'fas fa-exclamation-circle';
+            } else {
+                toast.style.background = '#27ae60';
+                icon.className = 'fas fa-check-circle';
+            }
+            
+            toast.style.display = 'flex';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Para Google Sheets (fácil de conectar después)
+        function exportToGoogleSheets() {
+            if (reports.length === 0) {
+                showToast('No hay reportes para exportar', 'error');
+                return;
+            }
+            
+            // Crear CSV para Google Sheets
+            let csv = 'Categoría,Detalles,Descripción,Fecha,Hora,Latitud,Longitud,Timestamp\n';
+            
+            reports.forEach(report => {
+                csv += `"${report.category}","${report.details}","${report.description}","${report.date}","${report.time}",${report.location.lat},${report.location.lng},"${report.timestamp}"\n`;
             });
             
-            return div;
-        };
-        reloadControl.addTo(map);
-        
-        // Control para mostrar/ocultar KML
-        const toggleKmlControl = L.control({position: 'bottomright'});
-        toggleKmlControl.onAdd = function() {
-            const div = L.DomUtil.create('div', 'leaflet-control-custom');
-            div.innerHTML = '<a href="#" title="Mostrar/ocultar circunscripciones">🗺️ Circunscripciones</a>';
+            // Descargar archivo
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `reportes_chascomus_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
             
-            L.DomEvent.on(div, 'click', function(e) {
-                L.DomEvent.stopPropagation(e);
-                if (map.hasLayer(kmlLayer)) {
-                    map.removeLayer(kmlLayer);
-                    div.innerHTML = '<a href="#" title="Mostrar circunscripciones">🗺️ Mostrar</a>';
-                } else {
-                    map.addLayer(kmlLayer);
-                    div.innerHTML = '<a href="#" title="Ocultar circunscripciones">🗺️ Ocultar</a>';
-                }
-            });
-            
-            return div;
-        };
-        toggleKmlControl.addTo(map);
+            showToast('CSV listo para importar a Google Sheets');
+        }
         
         // Hacer funciones globales
-        window.saveEvent = saveEvent;
-
+        window.showForm = showForm;
+        window.hideForm = hideForm;
+        window.getMyLocation = getMyLocation;
+        window.saveReport = saveReport;
+        window.toggleReports = toggleReports;
+        window.viewReport = viewReport;
+        window.exportToGoogleSheets = exportToGoogleSheets;
     </script>
 </body>
 </html>
