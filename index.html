@@ -441,6 +441,67 @@
             border-left: 4px solid #34a853;
         }
         
+        /* Estado de conexión */
+        .connection-status {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        
+        .connection-status.online {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .connection-status.offline {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        /* Botón de sincronización */
+        .sync-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 90px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: white;
+            border: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .sync-btn.pending {
+            background: #f39c12;
+            animation: pulse 2s infinite;
+        }
+        
+        .sync-btn.synced {
+            background: #3498db;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .form-container {
@@ -456,6 +517,11 @@
                 width: 90%;
                 left: 5%;
                 right: 5%;
+            }
+            
+            .sync-btn {
+                right: 80px;
+                bottom: 90px;
             }
         }
     </style>
@@ -482,6 +548,9 @@
         <button class="view-reports-btn" onclick="toggleReports()" title="Ver mis reportes">
             <i class="fas fa-list"></i>
         </button>
+        
+        <!-- Estado de conexión (se añade dinámicamente) -->
+        <div id="connectionStatus" class="connection-status" style="display: none;"></div>
     </div>
     
     <!-- Formulario flotante -->
@@ -571,12 +640,12 @@
                 <!-- Información para Google Sheets -->
                 <div class="sheets-info">
                     <i class="fas fa-info-circle"></i>
-                    Este reporte se guardará localmente y podrás exportarlo a Google Sheets
+                    <span id="syncInfo">Conectando a Google Sheets...</span>
                 </div>
                 
                 <!-- Botones -->
                 <button class="btn btn-primary" onclick="saveReport()">
-                    <i class="fas fa-paper-plane"></i> Enviar Reporte
+                    <i class="fas fa-paper-plane"></i> <span id="submitBtnText">Enviar Reporte</span>
                 </button>
                 <button type="button" class="btn btn-secondary" onclick="hideForm()">
                     Cancelar
@@ -618,12 +687,17 @@
         
         // Configuración
         const CHASCOMUS_COORD = [-35.5762, -58.0104];
+        const SHEETBEST_API = 'https://api.sheetbest.com/sheets/f541beca-e53f-4201-8d8f-feb75f92509b';
+        
         let map, markersLayer;
         let selectedLocation = null;
         let selectedCategory = null;
         let reports = JSON.parse(localStorage.getItem('chascomus_reports') || '[]');
+        let pendingReports = JSON.parse(localStorage.getItem('chascomus_pending_reports') || '[]');
+        let isOnline = navigator.onLine;
+        let syncInProgress = false;
         
-        // Detalles por categoría (para Google Sheets)
+        // Detalles por categoría
         const categoryDetails = {
             robo: [
                 'Robo a vivienda',
@@ -683,6 +757,20 @@
             ]
         };
         
+        // Detectar cambios en conexión
+        window.addEventListener('online', () => {
+            isOnline = true;
+            updateConnectionStatus();
+            showToast('✅ Conexión restablecida', 'success');
+            syncPendingReports();
+        });
+
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            updateConnectionStatus();
+            showToast('⚠️ Sin conexión - Los datos se guardarán localmente', 'warning');
+        });
+        
         // Inicializar
         document.addEventListener('DOMContentLoaded', initApp);
         
@@ -704,6 +792,20 @@
             // Configurar categorías
             setupCategories();
             
+            // Actualizar estado de conexión
+            updateConnectionStatus();
+            
+            // Agregar botón de sincronización
+            addSyncButton();
+            
+            // Intentar sincronizar pendientes si hay conexión
+            if (isOnline && pendingReports.length > 0) {
+                setTimeout(() => {
+                    showToast(`📤 ${pendingReports.length} reporte(s) pendiente(s) - Sincronizando...`, 'info');
+                    syncPendingReports();
+                }, 2000);
+            }
+            
             // Ocultar loader
             setTimeout(() => {
                 document.getElementById('loader').style.display = 'none';
@@ -716,10 +818,10 @@
                 zoom: 12,
                 zoomControl: true,
                 zoomControlPos: 'topright',
-                attributionControl: false // Esto desactiva la atribución automática
+                attributionControl: false
             });
             
-            // Capa base simple - SIN atribución en el texto
+            // Capa base simple
             L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
                 maxZoom: 20
             }).addTo(map);
@@ -731,7 +833,7 @@
             map.on('click', function(e) {
                 selectedLocation = e.latlng;
                 updateLocationDisplay();
-                showToast('Ubicación seleccionada');
+                showToast('📍 Ubicación seleccionada');
                 
                 // Si el formulario está abierto, mostrar
                 if (document.getElementById('formOverlay').style.display === 'flex') {
@@ -847,11 +949,11 @@
         
         function getMyLocation() {
             if (!navigator.geolocation) {
-                showToast('Tu navegador no soporta geolocalización', 'error');
+                showToast('❌ Tu navegador no soporta geolocalización', 'error');
                 return;
             }
             
-            showToast('Obteniendo tu ubicación...');
+            showToast('📍 Obteniendo tu ubicación...');
             
             navigator.geolocation.getCurrentPosition(
                 position => {
@@ -862,10 +964,10 @@
                     
                     map.setView(selectedLocation, 16);
                     updateLocationDisplay();
-                    showToast('Ubicación obtenida');
+                    showToast('✅ Ubicación obtenida');
                 },
                 error => {
-                    showToast('No se pudo obtener la ubicación', 'error');
+                    showToast('❌ No se pudo obtener la ubicación', 'error');
                 }
             );
         }
@@ -878,8 +980,68 @@
             }
         }
         
+        function updateConnectionStatus() {
+            const statusDiv = document.getElementById('connectionStatus');
+            const submitBtn = document.getElementById('submitBtnText');
+            const syncInfo = document.getElementById('syncInfo');
+            
+            if (isOnline) {
+                statusDiv.className = 'connection-status online';
+                statusDiv.innerHTML = '<i class="fas fa-wifi"></i> En línea';
+                submitBtn.textContent = 'Enviar Reporte';
+                syncInfo.innerHTML = '<i class="fas fa-check-circle"></i> Conectado a Google Sheets';
+                statusDiv.style.display = 'flex';
+            } else {
+                statusDiv.className = 'connection-status offline';
+                statusDiv.innerHTML = '<i class="fas fa-signal-slash"></i> Sin conexión';
+                submitBtn.textContent = 'Guardar Localmente';
+                syncInfo.innerHTML = '<i class="fas fa-clock"></i> Modo offline - Se enviará al recuperar conexión';
+                statusDiv.style.display = 'flex';
+            }
+            
+            // Actualizar botón de sincronización
+            updateSyncButton();
+        }
+        
+        function addSyncButton() {
+            // Crear botón si no existe
+            if (!document.getElementById('syncButton')) {
+                const syncBtn = document.createElement('button');
+                syncBtn.id = 'syncButton';
+                syncBtn.className = 'sync-btn';
+                syncBtn.title = 'Sincronizar reportes pendientes';
+                syncBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                syncBtn.onclick = syncPendingReports;
+                document.body.appendChild(syncBtn);
+            }
+            updateSyncButton();
+        }
+        
+        function updateSyncButton() {
+            const syncBtn = document.getElementById('syncButton');
+            if (!syncBtn) return;
+            
+            if (pendingReports.length > 0 && isOnline) {
+                syncBtn.className = 'sync-btn pending';
+                syncBtn.title = `${pendingReports.length} reporte(s) pendiente(s) - Sincronizar`;
+            } else if (pendingReports.length > 0 && !isOnline) {
+                syncBtn.className = 'sync-btn pending';
+                syncBtn.title = `${pendingReports.length} pendiente(s) - Esperando conexión`;
+                syncBtn.style.opacity = '0.5';
+                syncBtn.style.cursor = 'not-allowed';
+            } else {
+                syncBtn.className = 'sync-btn synced';
+                syncBtn.title = 'Todo sincronizado';
+                syncBtn.style.opacity = '1';
+                syncBtn.style.cursor = 'pointer';
+            }
+        }
+        
         function showForm() {
             document.getElementById('formOverlay').style.display = 'flex';
+            
+            // Actualizar estado de conexión en el formulario
+            updateConnectionStatus();
             
             // Si hay ubicación seleccionada, centrar ahí
             if (selectedLocation) {
@@ -902,15 +1064,124 @@
             document.getElementById('locationDisplay').style.color = '';
         }
         
+        async function saveReportToSheet(report) {
+            // IMPORTANTE: Los nombres de las propiedades deben coincidir con las columnas en tu Google Sheet
+            const sheetData = {
+                // COLUMNAS EN TU GOOGLE SHEET:
+                'Fecha': report.date,
+                'Hora': report.time,
+                'Categoría': report.category,
+                'Detalles': report.details,
+                'Descripción': report.description,
+                'Latitud': report.location.lat,
+                'Longitud': report.location.lng,
+                'Timestamp': report.timestamp,
+                'Estado': report.synced ? 'Enviado' : 'Pendiente'
+            };
+
+            try {
+                const response = await fetch(SHEETBEST_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(sheetData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ Reporte enviado a SheetBest:', result);
+                return true;
+            } catch (error) {
+                console.error('❌ Error enviando a SheetBest:', error);
+                return false;
+            }
+        }
+        
+        async function syncPendingReports() {
+            if (syncInProgress || !isOnline || pendingReports.length === 0) {
+                if (!isOnline) {
+                    showToast('❌ No hay conexión a internet', 'error');
+                }
+                return;
+            }
+            
+            syncInProgress = true;
+            showToast(`🔄 Sincronizando ${pendingReports.length} reporte(s)...`, 'info');
+            
+            const successful = [];
+            const failed = [];
+            
+            // Crear copia para iterar
+            const pendingCopy = [...pendingReports];
+            
+            for (const report of pendingCopy) {
+                try {
+                    const success = await saveReportToSheet(report);
+                    
+                    if (success) {
+                        successful.push(report.id);
+                        
+                        // Marcar como sincronizado en reports
+                        const reportIndex = reports.findIndex(r => r.id === report.id);
+                        if (reportIndex !== -1) {
+                            reports[reportIndex].synced = true;
+                        }
+                        
+                        // Eliminar de pendientes
+                        const pendingIndex = pendingReports.findIndex(r => r.id === report.id);
+                        if (pendingIndex !== -1) {
+                            pendingReports.splice(pendingIndex, 1);
+                        }
+                    } else {
+                        failed.push(report.id);
+                    }
+                    
+                    // Pequeña pausa para no saturar la API
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                } catch (error) {
+                    console.error('Error sincronizando reporte:', error);
+                    failed.push(report.id);
+                }
+            }
+            
+            // Actualizar localStorage
+            localStorage.setItem('chascomus_reports', JSON.stringify(reports));
+            localStorage.setItem('chascomus_pending_reports', JSON.stringify(pendingReports));
+            
+            syncInProgress = false;
+            updateSyncButton();
+            
+            if (successful.length > 0) {
+                showToast(`✅ ${successful.length} reporte(s) sincronizado(s) exitosamente`);
+                updateReportsList();
+            }
+            
+            if (failed.length > 0) {
+                showToast(`⚠️ ${failed.length} reporte(s) no se pudieron sincronizar`, 'warning');
+            }
+            
+            // Ocultar estado después de 3 segundos
+            setTimeout(() => {
+                const statusDiv = document.getElementById('connectionStatus');
+                if (statusDiv && pendingReports.length === 0) {
+                    statusDiv.style.display = 'none';
+                }
+            }, 3000);
+        }
+        
         function saveReport() {
             // Validaciones básicas
             if (!selectedCategory) {
-                showToast('Seleccioná una categoría', 'error');
+                showToast('❌ Seleccioná una categoría', 'error');
                 return;
             }
             
             if (!selectedLocation) {
-                showToast('Seleccioná una ubicación en el mapa', 'error');
+                showToast('❌ Seleccioná una ubicación en el mapa', 'error');
                 return;
             }
             
@@ -933,7 +1204,8 @@
                     lat: selectedLocation.lat,
                     lng: selectedLocation.lng
                 },
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                synced: false
             };
             
             // Guardar localmente
@@ -943,26 +1215,49 @@
             // Agregar marcador
             addMarker(report);
             
-            // Mostrar confirmación
-            showToast('Reporte guardado ✓');
+            // Intentar enviar a SheetBest o guardar como pendiente
+            if (isOnline) {
+                showToast('📤 Enviando reporte...');
+                
+                saveReportToSheet(report)
+                    .then(success => {
+                        if (success) {
+                            report.synced = true;
+                            // Actualizar en el array
+                            const index = reports.findIndex(r => r.id === report.id);
+                            if (index !== -1) {
+                                reports[index].synced = true;
+                                localStorage.setItem('chascomus_reports', JSON.stringify(reports));
+                            }
+                            showToast('✅ Reporte enviado exitosamente');
+                        } else {
+                            // Guardar como pendiente si falla
+                            pendingReports.push(report);
+                            localStorage.setItem('chascomus_pending_reports', JSON.stringify(pendingReports));
+                            showToast('⚠️ Reporte guardado localmente. Se enviará cuando haya conexión', 'warning');
+                            updateSyncButton();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        pendingReports.push(report);
+                        localStorage.setItem('chascomus_pending_reports', JSON.stringify(pendingReports));
+                        showToast('⚠️ Reporte guardado localmente. Se enviará cuando haya conexión', 'warning');
+                        updateSyncButton();
+                    });
+            } else {
+                // Sin conexión: guardar como pendiente
+                pendingReports.push(report);
+                localStorage.setItem('chascomus_pending_reports', JSON.stringify(pendingReports));
+                showToast('📱 Reporte guardado localmente. Se enviará cuando haya conexión', 'warning');
+                updateSyncButton();
+            }
             
             // Cerrar formulario
             hideForm();
             
             // Actualizar lista
             updateReportsList();
-            
-            // Para Google Sheets (estructura lista)
-            console.log('Reporte para Google Sheets:', {
-                'Categoría': category,
-                'Detalles': details,
-                'Descripción': description,
-                'Fecha': date,
-                'Hora': time,
-                'Latitud': selectedLocation.lat,
-                'Longitud': selectedLocation.lng,
-                'Timestamp': report.timestamp
-            });
         }
         
         function addMarker(report) {
@@ -978,11 +1273,12 @@
             };
             
             const color = colors[report.category] || '#2c3e50';
+            const syncIcon = report.synced ? '✓' : '⏳';
             
             const marker = L.marker([report.location.lat, report.location.lng], {
                 icon: L.divIcon({
                     className: 'report-marker',
-                    html: `<div style="background: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>`
+                    html: `<div style="background: ${color}; width: 28px; height: 28px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;">${syncIcon}</div>`
                 })
             }).addTo(markersLayer);
             
@@ -995,6 +1291,7 @@
                         <div><strong>Tipo:</strong> ${report.details}</div>
                         <div><strong>Fecha:</strong> ${report.date} ${report.time}</div>
                         <div><strong>Coords:</strong> ${report.location.lat.toFixed(5)}, ${report.location.lng.toFixed(5)}</div>
+                        <div><strong>Estado:</strong> ${report.synced ? '<span style="color:green;">✓ Enviado</span>' : '<span style="color:orange;">⏳ Pendiente</span>'}</div>
                     </div>
                 </div>
             `);
@@ -1022,12 +1319,21 @@
             
             let html = '';
             reports.slice(0, 10).forEach(report => {
+                const isPending = pendingReports.some(p => p.id === report.id);
+                const syncIcon = report.synced ? 
+                    '<i class="fas fa-check" style="color: #27ae60; margin-left: 5px;"></i>' : 
+                    '<i class="fas fa-clock" style="color: #f39c12; margin-left: 5px;"></i>';
+                
                 html += `
                     <div class="report-mini-item" onclick="viewReport(${report.id})">
-                        <div class="report-mini-type">${report.category}</div>
+                        <div class="report-mini-type">
+                            ${report.category}
+                            ${syncIcon}
+                        </div>
                         <div class="report-mini-desc">${report.description.substring(0, 60)}${report.description.length > 60 ? '...' : ''}</div>
                         <div style="font-size:11px; color:#999;">
                             ${report.date} ${report.time}
+                            ${isPending ? '<span style="color:#f39c12;"> (Pendiente)</span>' : ''}
                         </div>
                     </div>
                 `;
@@ -1080,6 +1386,12 @@
             if (type === 'error') {
                 toast.style.background = '#e74c3c';
                 icon.className = 'fas fa-exclamation-circle';
+            } else if (type === 'warning') {
+                toast.style.background = '#f39c12';
+                icon.className = 'fas fa-exclamation-triangle';
+            } else if (type === 'info') {
+                toast.style.background = '#3498db';
+                icon.className = 'fas fa-info-circle';
             } else {
                 toast.style.background = '#27ae60';
                 icon.className = 'fas fa-check-circle';
@@ -1092,30 +1404,6 @@
             }, 3000);
         }
         
-        // Para Google Sheets (fácil de conectar después)
-        function exportToGoogleSheets() {
-            if (reports.length === 0) {
-                showToast('No hay reportes para exportar', 'error');
-                return;
-            }
-            
-            // Crear CSV para Google Sheets
-            let csv = 'Categoría,Detalles,Descripción,Fecha,Hora,Latitud,Longitud,Timestamp\n';
-            
-            reports.forEach(report => {
-                csv += `"${report.category}","${report.details}","${report.description}","${report.date}","${report.time}",${report.location.lat},${report.location.lng},"${report.timestamp}"\n`;
-            });
-            
-            // Descargar archivo
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `reportes_chascomus_${new Date().toISOString().split('T')[0]}.csv`;
-            link.click();
-            
-            showToast('CSV listo para importar a Google Sheets');
-        }
-        
         // Hacer funciones globales
         window.showForm = showForm;
         window.hideForm = hideForm;
@@ -1123,7 +1411,7 @@
         window.saveReport = saveReport;
         window.toggleReports = toggleReports;
         window.viewReport = viewReport;
-        window.exportToGoogleSheets = exportToGoogleSheets;
+        window.syncPendingReports = syncPendingReports;
     </script>
 </body>
 </html>
