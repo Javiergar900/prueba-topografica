@@ -67,6 +67,11 @@
             transition: all 0.3s ease;
         }
         
+        /* Ocultar completamente la atribución de Leaflet */
+        .leaflet-control-attribution {
+            display: none !important;
+        }
+        
         /* Formulario flotante */
         .form-overlay {
             position: fixed;
@@ -710,13 +715,13 @@
                 center: CHASCOMUS_COORD,
                 zoom: 12,
                 zoomControl: true,
-                zoomControlPos: 'topright'
+                zoomControlPos: 'topright',
+                attributionControl: false // Esto desactiva la atribución automática
             });
             
-            // Capa base simple
+            // Capa base simple - SIN atribución en el texto
             L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
-                maxZoom: 20,
-                attribution: '© Chascomús Seguridad'
+                maxZoom: 20
             }).addTo(map);
             
             // Capa de marcadores
