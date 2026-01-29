@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Reportes Chascomús - Seguridad Rural</title>
     
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#e74c3c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    
     <!-- Iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -24,6 +30,7 @@
             color: #333;
             overflow: hidden;
             height: 100vh;
+            -webkit-tap-highlight-color: transparent;
         }
         
         /* App Container */
@@ -40,6 +47,8 @@
             padding: 12px 15px;
             text-align: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 100;
         }
         
         .app-title {
@@ -402,10 +411,10 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Toast notification */
+        /* Toast notification - POSICIÓN AJUSTADA MÁS ABAJO */
         .toast {
             position: fixed;
-            bottom: 80px;
+            bottom: 120px; /* Cambiado de 80px a 120px */
             left: 50%;
             transform: translateX(-50%);
             background: #2c3e50;
@@ -418,11 +427,13 @@
             align-items: center;
             gap: 10px;
             animation: slideIn 0.3s ease;
+            max-width: 90%;
+            text-align: center;
         }
         
         @keyframes slideIn {
-            from { bottom: 20px; opacity: 0; }
-            to { bottom: 80px; opacity: 1; }
+            from { bottom: 80px; opacity: 0; }
+            to { bottom: 120px; opacity: 1; }
         }
         
         /* Popup personalizado */
@@ -441,10 +452,10 @@
             border-left: 4px solid #34a853;
         }
         
-        /* Estado de conexión */
+        /* Estado de conexión - POSICIÓN AJUSTADA MÁS ABAJO */
         .connection-status {
             position: fixed;
-            bottom: 90px;
+            bottom: 160px; /* Cambiado de 90px a 160px */
             left: 50%;
             transform: translateX(-50%);
             padding: 8px 15px;
@@ -456,6 +467,7 @@
             z-index: 999;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
             transition: all 0.3s;
+            white-space: nowrap;
         }
         
         .connection-status.online {
@@ -468,11 +480,11 @@
             color: white;
         }
         
-        /* Botón de sincronización */
+        /* Botón de sincronización - POSICIÓN AJUSTADA MÁS A LA DERECHA */
         .sync-btn {
             position: fixed;
             bottom: 20px;
-            right: 90px;
+            right: 90px; /* Cambiado de 90px a 120px en móvil */
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -502,6 +514,67 @@
             100% { transform: scale(1); }
         }
         
+        /* Instalar PWA Banner */
+        .install-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1100;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .install-text {
+            font-size: 14px;
+            flex: 1;
+        }
+        
+        .install-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .install-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .later-btn {
+            background: transparent;
+            color: #ddd;
+            border: 1px solid #ddd;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        /* Cache status */
+        .cache-status {
+            position: fixed;
+            top: 60px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            z-index: 800;
+            display: none;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .form-container {
@@ -519,9 +592,52 @@
                 right: 5%;
             }
             
+            /* AJUSTE DE POSICIÓN EN MÓVIL */
             .sync-btn {
-                right: 80px;
+                right: 120px; /* Más a la derecha en móvil */
                 bottom: 90px;
+            }
+            
+            .connection-status {
+                bottom: 140px; /* Un poco más arriba en móvil */
+            }
+            
+            .toast {
+                bottom: 100px;
+            }
+            
+            .install-banner {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .install-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .sync-btn {
+                right: 100px;
+                bottom: 85px;
+                width: 45px;
+                height: 45px;
+            }
+            
+            .fab {
+                width: 55px;
+                height: 55px;
+                bottom: 15px;
+                right: 15px;
+            }
+            
+            .view-reports-btn {
+                width: 45px;
+                height: 45px;
+                bottom: 15px;
+                left: 15px;
             }
         }
     </style>
@@ -551,6 +667,9 @@
         
         <!-- Estado de conexión (se añade dinámicamente) -->
         <div id="connectionStatus" class="connection-status" style="display: none;"></div>
+        
+        <!-- Cache status -->
+        <div id="cacheStatus" class="cache-status"></div>
     </div>
     
     <!-- Formulario flotante -->
@@ -667,10 +786,21 @@
         </div>
     </div>
     
+    <!-- Instalar PWA Banner -->
+    <div class="install-banner" id="installBanner">
+        <div class="install-text">
+            <i class="fas fa-download"></i> Instalar app para mejor experiencia offline
+        </div>
+        <div class="install-buttons">
+            <button class="install-btn" onclick="installPWA()">Instalar</button>
+            <button class="later-btn" onclick="hideInstallBanner()">Ahora no</button>
+        </div>
+    </div>
+    
     <!-- Loader -->
     <div class="loader" id="loader">
         <div class="loader-spinner"></div>
-        <div style="margin-top: 15px; font-size: 14px; color: #2c3e50;">Cargando mapa de Chascomús...</div>
+        <div style="margin-top: 15px; font-size: 14px; color: #2c3e50;" id="loaderText">Cargando mapa de Chascomús...</div>
     </div>
     
     <!-- Toast -->
@@ -688,6 +818,7 @@
         // Configuración
         const CHASCOMUS_COORD = [-35.5762, -58.0104];
         const SHEETBEST_API = 'https://api.sheetbest.com/sheets/f541beca-e53f-4201-8d8f-feb75f92509b';
+        const APP_VERSION = '1.0.0';
         
         let map, markersLayer;
         let selectedLocation = null;
@@ -696,6 +827,14 @@
         let pendingReports = JSON.parse(localStorage.getItem('chascomus_pending_reports') || '[]');
         let isOnline = navigator.onLine;
         let syncInProgress = false;
+        let deferredPrompt = null;
+        let isAppInstalled = false;
+        
+        // Detectar si la app está instalada
+        if (window.matchMedia('(display-mode: standalone)').matches || 
+            window.navigator.standalone === true) {
+            isAppInstalled = true;
+        }
         
         // Detalles por categoría
         const categoryDetails = {
@@ -771,10 +910,25 @@
             showToast('⚠️ Sin conexión - Los datos se guardarán localmente', 'warning');
         });
         
+        // Evento para instalar PWA
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!isAppInstalled) {
+                setTimeout(() => {
+                    showInstallBanner();
+                }, 5000);
+            }
+        });
+        
         // Inicializar
         document.addEventListener('DOMContentLoaded', initApp);
         
         async function initApp() {
+            // Actualizar texto del loader
+            document.getElementById('loaderText').textContent = 
+                isOnline ? 'Cargando recursos...' : 'Cargando en modo offline...';
+            
             // Configurar fecha/hora actual
             const now = new Date();
             document.getElementById('eventDate').value = now.toISOString().split('T')[0];
@@ -783,8 +937,12 @@
             // Inicializar mapa
             initMap();
             
-            // Cargar KML
-            await loadKML();
+            // Cargar KML (solo si hay conexión)
+            if (isOnline) {
+                await loadKML();
+            } else {
+                showToast('🌐 Modo offline - Usando caché local', 'info');
+            }
             
             // Cargar reportes existentes
             loadExistingReports();
@@ -798,6 +956,9 @@
             // Agregar botón de sincronización
             addSyncButton();
             
+            // Verificar Service Worker
+            checkServiceWorker();
+            
             // Intentar sincronizar pendientes si hay conexión
             if (isOnline && pendingReports.length > 0) {
                 setTimeout(() => {
@@ -806,9 +967,18 @@
                 }, 2000);
             }
             
-            // Ocultar loader
+            // Mostrar estado de caché
+            updateCacheStatus();
+            
+            // Ocultar loader después de cargar todo
             setTimeout(() => {
                 document.getElementById('loader').style.display = 'none';
+                // Mostrar banner de instalación si corresponde
+                if (deferredPrompt && !isAppInstalled) {
+                    setTimeout(() => {
+                        showInstallBanner();
+                    }, 1000);
+                }
             }, 1500);
         }
         
@@ -821,9 +991,10 @@
                 attributionControl: false
             });
             
-            // Capa base simple
+            // Capa base con cacheo mejorado
             L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
-                maxZoom: 20
+                maxZoom: 20,
+                crossOrigin: true
             }).addTo(map);
             
             // Capa de marcadores
@@ -846,6 +1017,7 @@
             const kmlUrl = 'https://raw.githubusercontent.com/Javiergar900/prueba-topografica/main/circunscripciones.kml';
             
             try {
+                showToast('🗺️ Cargando mapas de Chascomús...');
                 const response = await fetch(kmlUrl);
                 const kmlText = await response.text();
                 const polygons = parseKML(kmlText);
@@ -861,8 +1033,27 @@
                     .addTo(map);
                 });
                 
+                showToast('✅ Mapas cargados correctamente');
+                
+                // Guardar KML en localStorage para offline
+                localStorage.setItem('chascomus_kml', kmlText);
+                
             } catch (error) {
-                console.log('KML opcional no cargado');
+                console.log('KML no cargado, intentando usar caché...');
+                // Intentar cargar desde caché
+                const cachedKML = localStorage.getItem('chascomus_kml');
+                if (cachedKML) {
+                    const polygons = parseKML(cachedKML);
+                    polygons.forEach(polygon => {
+                        L.polygon(polygon.coordinates, {
+                            color: '#2c3e50',
+                            weight: 2,
+                            opacity: 0.5,
+                            fillOpacity: 0.1
+                        }).addTo(map);
+                    });
+                    showToast('🗺️ Usando mapas cacheados', 'info');
+                }
             }
         }
         
@@ -1024,6 +1215,8 @@
             if (pendingReports.length > 0 && isOnline) {
                 syncBtn.className = 'sync-btn pending';
                 syncBtn.title = `${pendingReports.length} reporte(s) pendiente(s) - Sincronizar`;
+                syncBtn.style.cursor = 'pointer';
+                syncBtn.style.opacity = '1';
             } else if (pendingReports.length > 0 && !isOnline) {
                 syncBtn.className = 'sync-btn pending';
                 syncBtn.title = `${pendingReports.length} pendiente(s) - Esperando conexión`;
@@ -1035,6 +1228,28 @@
                 syncBtn.style.opacity = '1';
                 syncBtn.style.cursor = 'pointer';
             }
+        }
+        
+        function updateCacheStatus() {
+            const cacheDiv = document.getElementById('cacheStatus');
+            const totalSpace = 5 * 1024 * 1024; // 5MB estimado
+            const usedSpace = JSON.stringify(reports).length + 
+                             JSON.stringify(pendingReports).length +
+                             (localStorage.getItem('chascomus_kml') || '').length;
+            
+            const percentage = Math.min(100, (usedSpace / totalSpace) * 100);
+            cacheDiv.innerHTML = `📦 Caché: ${Math.round(percentage)}%`;
+            
+            if (percentage > 80) {
+                cacheDiv.style.background = 'rgba(231, 76, 60, 0.8)';
+            } else if (percentage > 50) {
+                cacheDiv.style.background = 'rgba(241, 196, 15, 0.8)';
+            } else {
+                cacheDiv.style.background = 'rgba(0,0,0,0.7)';
+            }
+            
+            // Mostrar solo si hay datos
+            cacheDiv.style.display = reports.length > 0 ? 'block' : 'none';
         }
         
         function showForm() {
@@ -1067,7 +1282,6 @@
         async function saveReportToSheet(report) {
             // IMPORTANTE: Los nombres de las propiedades deben coincidir con las columnas en tu Google Sheet
             const sheetData = {
-                // COLUMNAS EN TU GOOGLE SHEET:
                 'Fecha': report.date,
                 'Hora': report.time,
                 'Categoría': report.category,
@@ -1076,7 +1290,8 @@
                 'Latitud': report.location.lat,
                 'Longitud': report.location.lng,
                 'Timestamp': report.timestamp,
-                'Estado': report.synced ? 'Enviado' : 'Pendiente'
+                'Estado': report.synced ? 'Enviado' : 'Pendiente',
+                'Versión App': APP_VERSION
             };
 
             try {
@@ -1154,6 +1369,7 @@
             
             syncInProgress = false;
             updateSyncButton();
+            updateCacheStatus();
             
             if (successful.length > 0) {
                 showToast(`✅ ${successful.length} reporte(s) sincronizado(s) exitosamente`);
@@ -1256,8 +1472,9 @@
             // Cerrar formulario
             hideForm();
             
-            // Actualizar lista
+            // Actualizar lista y caché
             updateReportsList();
+            updateCacheStatus();
         }
         
         function addMarker(report) {
@@ -1404,6 +1621,62 @@
             }, 3000);
         }
         
+        // Funciones PWA
+        function showInstallBanner() {
+            if (deferredPrompt && !isAppInstalled) {
+                const banner = document.getElementById('installBanner');
+                banner.style.display = 'flex';
+                
+                // Ocultar automáticamente después de 30 segundos
+                setTimeout(() => {
+                    hideInstallBanner();
+                }, 30000);
+            }
+        }
+        
+        function hideInstallBanner() {
+            const banner = document.getElementById('installBanner');
+            banner.style.display = 'none';
+        }
+        
+        async function installPWA() {
+            if (!deferredPrompt) return;
+            
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            if (outcome === 'accepted') {
+                showToast('✅ App instalada - Ahora funciona totalmente offline');
+                isAppInstalled = true;
+                hideInstallBanner();
+            } else {
+                showToast('❌ Instalación cancelada', 'warning');
+            }
+            
+            deferredPrompt = null;
+        }
+        
+        async function checkServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('sw.js');
+                    console.log('✅ Service Worker registrado:', registration);
+                    
+                    // Verificar actualizaciones
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                showToast('🔄 Nueva versión disponible - Recargá la app', 'info');
+                            }
+                        });
+                    });
+                } catch (error) {
+                    console.log('❌ Service Worker no registrado:', error);
+                }
+            }
+        }
+        
         // Hacer funciones globales
         window.showForm = showForm;
         window.hideForm = hideForm;
@@ -1412,6 +1685,8 @@
         window.toggleReports = toggleReports;
         window.viewReport = viewReport;
         window.syncPendingReports = syncPendingReports;
+        window.installPWA = installPWA;
+        window.hideInstallBanner = hideInstallBanner;
     </script>
 </body>
 </html>
