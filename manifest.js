@@ -1,16 +1,52 @@
 {
-  "name": "Chascomús Rural",
-  "short_name": "MapaRural",
-  "start_url": ".",
+  "name": "Reportes Chascomús",
+  "short_name": "Chascomús Seg",
+  "description": "App de reportes ciudadanos para seguridad rural",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2c3e50",
+  "background_color": "#2c3e50",
+  "theme_color": "#e74c3c",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "https://via.placeholder.com/512.png?text=Mapa",
+      "src": "icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     }
   ]
 }
