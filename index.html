@@ -1128,7 +1128,6 @@
                     <!-- Información para Google Sheets -->
                     <div class="sheets-info">
                         <i class="fas fa-info-circle"></i>
-                        <span id="syncInfo">Conectando a Google Sheets...</span>
                     </div>
                     
                     <div class="step-buttons">
@@ -1663,7 +1662,7 @@
                 statusDiv.className = 'connection-status offline';
                 statusDiv.innerHTML = '<i class="fas fa-signal-slash"></i> Sin conexión';
                 submitBtn.textContent = 'Guardar Localmente';
-                syncInfo.innerHTML = '<i class="fas fa-clock"></i> Modo offline - Se enviará al recuperar conexión';
+                syncInfo.innerHTML = '<i class="fas fa-clock"></i> Sin conección - Se enviará al recuperar conexión';
                 statusDiv.style.display = 'flex';
             }
             
