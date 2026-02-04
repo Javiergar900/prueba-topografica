@@ -151,6 +151,257 @@
             padding: 20px;
         }
         
+        /* Paso de ubicación primero */
+        .step-container {
+            display: none;
+        }
+        
+        .step-container.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ddd;
+            transition: all 0.3s;
+        }
+        
+        .step-dot.active {
+            background: #e74c3c;
+            transform: scale(1.2);
+        }
+        
+        .step-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .step-description {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        /* Instrucción de ubicación */
+        .location-instruction {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .location-icon {
+            font-size: 40px;
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+        
+        .location-instruction-text {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .location-subtext {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* Opciones de ubicación */
+        .location-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .location-option-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+        
+        .location-option-btn:hover {
+            border-color: #3498db;
+            background: #f0f7ff;
+            transform: translateY(-2px);
+        }
+        
+        .location-option-icon {
+            font-size: 24px;
+            color: #3498db;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .location-option-text {
+            flex: 1;
+        }
+        
+        .location-option-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .location-option-desc {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        /* Mapa para seleccionar ubicación */
+        .map-selector-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+        }
+        
+        .map-selector-header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2001;
+        }
+        
+        .map-selector-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .map-selector-instructions {
+            background: #f39c12;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            font-size: 14px;
+            z-index: 2001;
+        }
+        
+        .map-selector-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        .map-selector-map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .confirm-location-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #27ae60, #219653);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 2001;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .confirm-location-btn:hover {
+            background: linear-gradient(135deg, #219653, #1e874b);
+            transform: translateX(-50%) translateY(-2px);
+        }
+        
+        .location-pin {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -100%);
+            color: #e74c3c;
+            font-size: 40px;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            z-index: 2000;
+            pointer-events: none;
+        }
+        
+        /* Ubicación seleccionada */
+        .location-selected {
+            background: #e8f5e9;
+            border: 2px solid #27ae60;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
+        }
+        
+        .location-selected-icon {
+            font-size: 24px;
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+        
+        .location-coords {
+            font-family: monospace;
+            font-size: 14px;
+            color: #2c3e50;
+            margin: 5px 0;
+        }
+        
+        .change-location-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
         /* Categorías como botones grandes */
         .categories {
             display: grid;
@@ -226,28 +477,45 @@
             min-height: 100px;
         }
         
-        /* Ubicación */
-        .location-display {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            margin-bottom: 10px;
+        /* Botones de navegación entre pasos */
+        .step-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
         
-        .location-btn {
-            background: #3498db;
-            color: white;
+        .step-btn {
+            flex: 1;
+            padding: 12px;
             border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s;
+            font-size: 15px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            width: 100%;
             justify-content: center;
+            gap: 8px;
+        }
+        
+        .step-next {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .step-next:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            transform: translateY(-2px);
+        }
+        
+        .step-prev {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .step-prev:hover {
+            background: #e0e0e0;
         }
         
         /* Botones principales */
@@ -561,19 +829,7 @@
             font-size: 13px;
         }
         
-        /* Cache status */
-        .cache-status {
-            position: fixed;
-            top: 60px;
-            left: 10px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 10px;
-            z-index: 800;
-            display: none;
-        }
+
         
         /* Responsive */
         @media (max-width: 768px) {
@@ -616,6 +872,14 @@
                 width: 100%;
                 justify-content: center;
             }
+            
+            .location-options {
+                gap: 10px;
+            }
+            
+            .location-option-btn {
+                padding: 15px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -638,6 +902,21 @@
                 height: 45px;
                 bottom: 15px;
                 left: 15px;
+            }
+            
+            .location-option-icon {
+                font-size: 20px;
+                width: 30px;
+            }
+            
+            .location-option-title {
+                font-size: 15px;
+            }
+            
+            .confirm-location-btn {
+                padding: 12px 25px;
+                font-size: 15px;
+                bottom: 15px;
             }
         }
     </style>
@@ -684,9 +963,84 @@
             </div>
             
             <div class="form-body">
-                <!-- Categorías -->
-                <div class="form-group">
-                    <label class="form-label">¿Qué pasó?</label>
+                <!-- Indicador de pasos -->
+                <div class="step-indicator">
+                    <div class="step-dot" id="step1Dot"></div>
+                    <div class="step-dot" id="step2Dot"></div>
+                    <div class="step-dot" id="step3Dot"></div>
+                </div>
+                
+                <!-- Paso 1: Seleccionar ubicación -->
+                <div class="step-container active" id="step1">
+                    <div class="step-title">Paso 1: ¿Dónde?</div>
+                    <div class="step-description">Primero seleccioná la ubicación del evento</div>
+                    
+                    <div id="locationSelectedDisplay" style="display: none;">
+                        <div class="location-selected">
+                            <div class="location-selected-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div>¡Ubicación seleccionada!</div>
+                            <div class="location-coords" id="selectedCoords"></div>
+                            <button type="button" class="change-location-btn" onclick="changeLocation()">
+                                <i class="fas fa-edit"></i> Cambiar ubicación
+                            </button>
+                        </div>
+                        
+                        <div class="step-buttons">
+                            <button type="button" class="step-btn step-prev" onclick="hideForm()">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                            <button type="button" class="step-btn step-next" onclick="nextStep()">
+                                Siguiente <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="locationNotSelected">
+                        <div class="location-instruction">
+                            <div class="location-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="location-instruction-text">Seleccioná cómo querés indicar la ubicación</div>
+                            <div class="location-subtext">Podés usar tu ubicación actual o buscar en el mapa</div>
+                        </div>
+                        
+                        <div class="location-options">
+                            <button type="button" class="location-option-btn" onclick="useCurrentLocation()">
+                                <div class="location-option-icon">
+                                    <i class="fas fa-location-crosshairs"></i>
+                                </div>
+                                <div class="location-option-text">
+                                    <div class="location-option-title">Usar mi ubicación actual</div>
+                                    <div class="location-option-desc">Usa el GPS de tu dispositivo para obtener tu ubicación precisa</div>
+                                </div>
+                                <i class="fas fa-chevron-right" style="color: #999;"></i>
+                            </button>
+                            
+                            <button type="button" class="location-option-btn" onclick="openMapSelector()">
+                                <div class="location-option-icon">
+                                    <i class="fas fa-map"></i>
+                                </div>
+                                <div class="location-option-text">
+                                    <div class="location-option-title">Seleccionar en el mapa</div>
+                                    <div class="location-option-desc">Busca y selecciona manualmente la ubicación exacta</div>
+                                </div>
+                                <i class="fas fa-chevron-right" style="color: #999;"></i>
+                            </button>
+                        </div>
+                        
+                        <button type="button" class="step-btn step-prev" onclick="hideForm()" style="margin-top: 20px;">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Paso 2: Seleccionar categoría -->
+                <div class="step-container" id="step2">
+                    <div class="step-title">Paso 2: ¿Qué pasó?</div>
+                    <div class="step-description">Elegí el tipo de evento que querés reportar</div>
+                    
                     <div class="categories" id="categories">
                         <div class="category-btn" data-category="robo">
                             <i class="fas fa-gem category-icon"></i>
@@ -717,59 +1071,84 @@
                             <span class="category-label">Otros</span>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Detalles específicos -->
-                <div class="form-group" id="detailsGroup" style="display: none;">
-                    <label class="form-label" id="detailsLabel">Detalles</label>
-                    <select class="form-select" id="eventDetails">
-                        <!-- Se llena dinámicamente según categoría -->
-                    </select>
-                </div>
-                
-                <!-- Descripción -->
-                <div class="form-group">
-                    <label class="form-label">Descripción (opcional)</label>
-                    <textarea class="form-textarea" id="description" 
-                              placeholder="Ej: Hombre con remera roja, moto azul, etc..."></textarea>
-                </div>
-                
-                <!-- Ubicación -->
-                <div class="form-group">
-                    <label class="form-label">Ubicación</label>
-                    <div class="location-display" id="locationDisplay">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span id="locationText">Tocá el mapa para seleccionar ubicación</span>
-                    </div>
-                    <button type="button" class="location-btn" onclick="getMyLocation()">
-                        <i class="fas fa-location-crosshairs"></i>
-                        Usar mi ubicación actual
-                    </button>
-                </div>
-                
-                <!-- Fecha y hora -->
-                <div class="form-group">
-                    <label class="form-label">¿Cuándo pasó?</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <input type="date" class="form-input" id="eventDate" value="">
-                        <input type="time" class="form-input" id="eventTime" value="">
+                    
+                    <div class="step-buttons">
+                        <button type="button" class="step-btn step-prev" onclick="prevStep()">
+                            <i class="fas fa-arrow-left"></i> Atrás
+                        </button>
+                        <button type="button" class="step-btn step-next" onclick="nextStep()" id="nextStep2Btn" disabled>
+                            Siguiente <i class="fas fa-arrow-right"></i>
+                        </button>
                     </div>
                 </div>
                 
-                <!-- Información para Google Sheets -->
-                <div class="sheets-info">
-                    <i class="fas fa-info-circle"></i>
-                    <span id="syncInfo">Conectando a Google Sheets...</span>
+                <!-- Paso 3: Detalles completos -->
+                <div class="step-container" id="step3">
+                    <div class="step-title">Paso 3: Detalles completos</div>
+                    <div class="step-description">Completá los detalles del reporte</div>
+                    
+                    <!-- Detalles específicos -->
+                    <div class="form-group" id="detailsGroup">
+                        <label class="form-label" id="detailsLabel">Tipo específico</label>
+                        <select class="form-select" id="eventDetails">
+                            <!-- Se llena dinámicamente según categoría -->
+                        </select>
+                    </div>
+                    
+                    <!-- Descripción -->
+                    <div class="form-group">
+                        <label class="form-label">Descripción (opcional)</label>
+                        <textarea class="form-textarea" id="description" 
+                                  placeholder="Ej: Hombre con remera roja, moto azul, etc..."></textarea>
+                    </div>
+                    
+                    <!-- Fecha y hora -->
+                    <div class="form-group">
+                        <label class="form-label">¿Cuándo pasó?</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <input type="date" class="form-input" id="eventDate" value="">
+                            <input type="time" class="form-input" id="eventTime" value="">
+                        </div>
+                    </div>
+                    
+                    <!-- Información para Google Sheets -->
+                    <div class="sheets-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="syncInfo">Conectando a Google Sheets...</span>
+                    </div>
+                    
+                    <div class="step-buttons">
+                        <button type="button" class="step-btn step-prev" onclick="prevStep()">
+                            <i class="fas fa-arrow-left"></i> Atrás
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="saveReport()">
+                            <i class="fas fa-paper-plane"></i> <span id="submitBtnText">Enviar Reporte</span>
+                        </button>
+                    </div>
                 </div>
-                
-                <!-- Botones -->
-                <button class="btn btn-primary" onclick="saveReport()">
-                    <i class="fas fa-paper-plane"></i> <span id="submitBtnText">Enviar Reporte</span>
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="hideForm()">
-                    Cancelar
-                </button>
             </div>
+        </div>
+    </div>
+    
+    <!-- Selector de ubicación en mapa -->
+    <div class="map-selector-overlay" id="mapSelectorOverlay">
+        <div class="map-selector-header">
+            <div class="map-selector-title">Seleccionar ubicación</div>
+            <button onclick="closeMapSelector()" style="background:none; border:none; color:white; cursor:pointer; font-size: 20px;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="map-selector-instructions">
+            <i class="fas fa-hand-pointer"></i> Tocá en el mapa para seleccionar la ubicación exacta
+        </div>
+        <div class="map-selector-container">
+            <div id="mapSelector" class="map-selector-map"></div>
+            <div class="location-pin">
+                <i class="fas fa-map-pin"></i>
+            </div>
+            <button class="confirm-location-btn" id="confirmLocationBtn" onclick="confirmMapLocation()">
+                <i class="fas fa-check"></i> Confirmar esta ubicación
+            </button>
         </div>
     </div>
     
@@ -820,9 +1199,11 @@
         const SHEETBEST_API = 'https://api.sheetbest.com/sheets/f541beca-e53f-4201-8d8f-feb75f92509b';
         const APP_VERSION = '1.0.0';
         
-        let map, markersLayer;
+        let map, mapSelector, markersLayer, kmlPolygons = [];
         let selectedLocation = null;
+        let tempMapLocation = null;
         let selectedCategory = null;
+        let currentStep = 1;
         let reports = JSON.parse(localStorage.getItem('chascomus_reports') || '[]');
         let pendingReports = JSON.parse(localStorage.getItem('chascomus_pending_reports') || '[]');
         let isOnline = navigator.onLine;
@@ -934,14 +1315,24 @@
             document.getElementById('eventDate').value = now.toISOString().split('T')[0];
             document.getElementById('eventTime').value = now.toTimeString().slice(0, 5);
             
-            // Inicializar mapa
+            // Inicializar mapa principal
             initMap();
+            
+            // Inicializar selector de mapa (oculto inicialmente)
+            initMapSelector();
             
             // Cargar KML (solo si hay conexión)
             if (isOnline) {
                 await loadKML();
+                await loadKMLToSelector();
             } else {
                 showToast('🌐 Modo offline - Usando caché local', 'info');
+                // Intentar cargar desde caché
+                const cachedKML = localStorage.getItem('chascomus_kml');
+                if (cachedKML) {
+                    loadKMLFromCache(cachedKML);
+                    loadKMLToSelectorFromCache(cachedKML);
+                }
             }
             
             // Cargar reportes existentes
@@ -999,17 +1390,28 @@
             
             // Capa de marcadores
             markersLayer = L.layerGroup().addTo(map);
+        }
+        
+        function initMapSelector() {
+            mapSelector = L.map('mapSelector', {
+                center: CHASCOMUS_COORD,
+                zoom: 13,
+                zoomControl: true,
+                zoomControlPos: 'topright',
+                attributionControl: false
+            });
+            
+            // Capa base
+            L.tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
+                maxZoom: 20,
+                crossOrigin: true
+            }).addTo(mapSelector);
             
             // Click en el mapa para seleccionar ubicación
-            map.on('click', function(e) {
-                selectedLocation = e.latlng;
-                updateLocationDisplay();
-                showToast('📍 Ubicación seleccionada');
-                
-                // Si el formulario está abierto, mostrar
-                if (document.getElementById('formOverlay').style.display === 'flex') {
-                    showForm();
-                }
+            mapSelector.on('click', function(e) {
+                tempMapLocation = e.latlng;
+                document.getElementById('confirmLocationBtn').style.display = 'flex';
+                showToast('📍 Tocá "Confirmar" para usar esta ubicación');
             });
         }
         
@@ -1020,41 +1422,72 @@
                 showToast('🗺️ Cargando mapas de Chascomús...');
                 const response = await fetch(kmlUrl);
                 const kmlText = await response.text();
-                const polygons = parseKML(kmlText);
                 
-                polygons.forEach(polygon => {
-                    L.polygon(polygon.coordinates, {
-                        color: '#2c3e50',
-                        weight: 2,
-                        opacity: 0.5,
-                        fillOpacity: 0.1
-                    })
-                    .bindTooltip(polygon.name, {direction: 'center'})
-                    .addTo(map);
-                });
-                
-                showToast('✅ Mapas cargados correctamente');
+                // Cargar en mapa principal
+                loadKMLToMap(kmlText);
                 
                 // Guardar KML en localStorage para offline
                 localStorage.setItem('chascomus_kml', kmlText);
                 
+                showToast('✅ Mapas cargados correctamente');
+                
             } catch (error) {
-                console.log('KML no cargado, intentando usar caché...');
-                // Intentar cargar desde caché
-                const cachedKML = localStorage.getItem('chascomus_kml');
-                if (cachedKML) {
-                    const polygons = parseKML(cachedKML);
-                    polygons.forEach(polygon => {
-                        L.polygon(polygon.coordinates, {
-                            color: '#2c3e50',
-                            weight: 2,
-                            opacity: 0.5,
-                            fillOpacity: 0.1
-                        }).addTo(map);
-                    });
-                    showToast('🗺️ Usando mapas cacheados', 'info');
-                }
+                console.log('KML no cargado:', error);
             }
+        }
+        
+        function loadKMLToMap(kmlText) {
+            const polygons = parseKML(kmlText);
+            
+            polygons.forEach(polygon => {
+                // Polígono NO clickeable
+                const poly = L.polygon(polygon.coordinates, {
+                    color: '#2c3e50',
+                    weight: 2,
+                    opacity: 0.5,
+                    fillOpacity: 0.1,
+                    interactive: false
+                })
+                .bindTooltip(polygon.name, {direction: 'center'})
+                .addTo(map);
+                
+                kmlPolygons.push(poly);
+            });
+        }
+        
+        async function loadKMLToSelector() {
+            const kmlUrl = 'https://raw.githubusercontent.com/Javiergar900/prueba-topografica/main/circunscripciones.kml';
+            
+            try {
+                const response = await fetch(kmlUrl);
+                const kmlText = await response.text();
+                loadKMLToSelectorMap(kmlText);
+            } catch (error) {
+                console.log('KML no cargado para selector:', error);
+            }
+        }
+        
+        function loadKMLToSelectorMap(kmlText) {
+            const polygons = parseKML(kmlText);
+            
+            polygons.forEach(polygon => {
+                // Polígono NO clickeable en selector también
+                L.polygon(polygon.coordinates, {
+                    color: '#2c3e50',
+                    weight: 2,
+                    opacity: 0.5,
+                    fillOpacity: 0.1,
+                    interactive: false
+                }).addTo(mapSelector);
+            });
+        }
+        
+        function loadKMLFromCache(kmlText) {
+            loadKMLToMap(kmlText);
+        }
+        
+        function loadKMLToSelectorFromCache(kmlText) {
+            loadKMLToSelectorMap(kmlText);
         }
         
         function parseKML(kmlText) {
@@ -1113,8 +1546,13 @@
                     this.classList.add('active');
                     selectedCategory = this.dataset.category;
                     
-                    // Mostrar detalles específicos
-                    showCategoryDetails();
+                    // Habilitar botón siguiente
+                    document.getElementById('nextStep2Btn').disabled = false;
+                    
+                    // Mostrar detalles específicos (en paso 3)
+                    if (currentStep === 3) {
+                        showCategoryDetails();
+                    }
                 });
             });
         }
@@ -1138,13 +1576,13 @@
             }
         }
         
-        function getMyLocation() {
+        function useCurrentLocation() {
             if (!navigator.geolocation) {
                 showToast('❌ Tu navegador no soporta geolocalización', 'error');
                 return;
             }
             
-            showToast('📍 Obteniendo tu ubicación...');
+            showToast('📍 Obteniendo tu ubicación actual...');
             
             navigator.geolocation.getCurrentPosition(
                 position => {
@@ -1153,22 +1591,91 @@
                         position.coords.longitude
                     );
                     
+                    // Centrar mapa principal en la ubicación
                     map.setView(selectedLocation, 16);
-                    updateLocationDisplay();
-                    showToast('✅ Ubicación obtenida');
+                    
+                    updateLocationStepDisplay();
+                    showToast('✅ Ubicación actual obtenida');
                 },
                 error => {
                     showToast('❌ No se pudo obtener la ubicación', 'error');
+                    // Ofrecer alternativa
+                    setTimeout(() => {
+                        if (confirm('¿Querés seleccionar la ubicación en el mapa en su lugar?')) {
+                            openMapSelector();
+                        }
+                    }, 500);
                 }
             );
         }
         
-        function updateLocationDisplay() {
+        function openMapSelector() {
+            // Ocultar formulario
+            document.getElementById('formOverlay').style.display = 'none';
+            
+            // Mostrar selector de mapa
+            document.getElementById('mapSelectorOverlay').style.display = 'flex';
+            
+            // Si ya hay una ubicación seleccionada previamente, centrar ahí
+            if (selectedLocation) {
+                mapSelector.setView(selectedLocation, 16);
+                tempMapLocation = selectedLocation;
+                document.getElementById('confirmLocationBtn').style.display = 'flex';
+            } else {
+                // Si no, centrar en Chascomús
+                mapSelector.setView(CHASCOMUS_COORD, 13);
+                tempMapLocation = null;
+                document.getElementById('confirmLocationBtn').style.display = 'none';
+            }
+            
+            // Forzar actualización del tamaño del mapa
+            setTimeout(() => {
+                mapSelector.invalidateSize();
+            }, 100);
+        }
+        
+        function closeMapSelector() {
+            document.getElementById('mapSelectorOverlay').style.display = 'none';
+            // Mostrar formulario nuevamente
+            document.getElementById('formOverlay').style.display = 'flex';
+        }
+        
+        function confirmMapLocation() {
+            if (!tempMapLocation) {
+                showToast('❌ Primero seleccioná un punto en el mapa', 'error');
+                return;
+            }
+            
+            selectedLocation = tempMapLocation;
+            
+            // Cerrar selector
+            closeMapSelector();
+            
+            // Centrar mapa principal en la ubicación seleccionada
+            map.setView(selectedLocation, 16);
+            
+            updateLocationStepDisplay();
+            showToast('📍 Ubicación seleccionada en el mapa');
+        }
+        
+        function updateLocationStepDisplay() {
             if (selectedLocation) {
                 const text = `${selectedLocation.lat.toFixed(5)}, ${selectedLocation.lng.toFixed(5)}`;
-                document.getElementById('locationText').textContent = text;
-                document.getElementById('locationDisplay').style.color = '#27ae60';
+                document.getElementById('selectedCoords').textContent = text;
+                
+                // Mostrar ubicación seleccionada y ocultar opciones
+                document.getElementById('locationSelectedDisplay').style.display = 'block';
+                document.getElementById('locationNotSelected').style.display = 'none';
+            } else {
+                document.getElementById('locationSelectedDisplay').style.display = 'none';
+                document.getElementById('locationNotSelected').style.display = 'block';
             }
+        }
+        
+        function changeLocation() {
+            // Resetear ubicación y mostrar opciones nuevamente
+            selectedLocation = null;
+            updateLocationStepDisplay();
         }
         
         function updateConnectionStatus() {
@@ -1255,13 +1762,11 @@
         function showForm() {
             document.getElementById('formOverlay').style.display = 'flex';
             
+            // Iniciar siempre en paso 1 (ubicación)
+            goToStep(1);
+            
             // Actualizar estado de conexión en el formulario
             updateConnectionStatus();
-            
-            // Si hay ubicación seleccionada, centrar ahí
-            if (selectedLocation) {
-                map.setView(selectedLocation, 16);
-            }
         }
         
         function hideForm() {
@@ -1270,13 +1775,70 @@
         }
         
         function resetForm() {
+            // Resetear pasos
+            goToStep(1);
+            
+            // Resetear formulario
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('detailsGroup').style.display = 'none';
             document.getElementById('description').value = '';
             selectedCategory = null;
-            selectedLocation = null;
-            document.getElementById('locationText').textContent = 'Tocá el mapa para seleccionar ubicación';
-            document.getElementById('locationDisplay').style.color = '';
+            
+            // Resetear botón siguiente del paso 2
+            document.getElementById('nextStep2Btn').disabled = true;
+        }
+        
+        function goToStep(step) {
+            currentStep = step;
+            
+            // Ocultar todos los pasos
+            document.querySelectorAll('.step-container').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Mostrar paso actual
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            // Actualizar indicadores de pasos
+            document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                if (index < step) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+            
+            // Actualizar display de ubicación si estamos en paso 1
+            if (step === 1) {
+                updateLocationStepDisplay();
+            }
+            
+            // Si vamos al paso 3 y ya hay una categoría seleccionada, mostrar detalles
+            if (step === 3 && selectedCategory) {
+                showCategoryDetails();
+            }
+        }
+        
+        function nextStep() {
+            if (currentStep === 1) {
+                if (!selectedLocation) {
+                    showToast('❌ Primero seleccioná una ubicación', 'error');
+                    return;
+                }
+                goToStep(2);
+            } else if (currentStep === 2) {
+                if (!selectedCategory) {
+                    showToast('❌ Seleccioná una categoría', 'error');
+                    return;
+                }
+                goToStep(3);
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
+            }
         }
         
         async function saveReportToSheet(report) {
@@ -1397,7 +1959,7 @@
             }
             
             if (!selectedLocation) {
-                showToast('❌ Seleccioná una ubicación en el mapa', 'error');
+                showToast('❌ Seleccioná una ubicación', 'error');
                 return;
             }
             
@@ -1680,13 +2242,19 @@
         // Hacer funciones globales
         window.showForm = showForm;
         window.hideForm = hideForm;
-        window.getMyLocation = getMyLocation;
+        window.useCurrentLocation = useCurrentLocation;
+        window.openMapSelector = openMapSelector;
+        window.closeMapSelector = closeMapSelector;
+        window.confirmMapLocation = confirmMapLocation;
+        window.changeLocation = changeLocation;
         window.saveReport = saveReport;
         window.toggleReports = toggleReports;
         window.viewReport = viewReport;
         window.syncPendingReports = syncPendingReports;
         window.installPWA = installPWA;
         window.hideInstallBanner = hideInstallBanner;
+        window.nextStep = nextStep;
+        window.prevStep = prevStep;
     </script>
 </body>
 </html>
