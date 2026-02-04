@@ -829,7 +829,19 @@
             font-size: 13px;
         }
         
-
+        /* Cache status */
+        .cache-status {
+            position: fixed;
+            top: 60px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            z-index: 800;
+            display: none;
+        }
         
         /* Responsive */
         @media (max-width: 768px) {
@@ -881,6 +893,9 @@
                 padding: 15px;
             }
         }
+        .sync-btn {
+    display: none !important;
+}
         
         @media (max-width: 480px) {
             .sync-btn {
@@ -1187,6 +1202,7 @@
         <i class="fas fa-check-circle"></i>
         <span id="toastMessage"></span>
     </div>
+    
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
