@@ -42,7 +42,7 @@
         
         /* Header simple */
         .header {
-            background: #2c3e50;
+            background: #126b7a;
             color: white;
             padding: 12px 15px;
             text-align: center;
@@ -974,7 +974,6 @@
                     <i class="fas fa-times"></i>
                 </button>
                 <div class="form-title">Nuevo Reporte</div>
-                <div class="form-subtitle">Compartí información de seguridad</div>
             </div>
             
             <div class="form-body">
@@ -1716,7 +1715,7 @@
                              (localStorage.getItem('chascomus_kml') || '').length;
             
             const percentage = Math.min(100, (usedSpace / totalSpace) * 100);
-            cacheDiv.innerHTML = `📦 Caché: ${Math.round(percentage)}%`;
+            cacheDiv.innerHTML = `  ${Math.round(percentage)}`;
             
             if (percentage > 80) {
                 cacheDiv.style.background = 'rgba(231, 76, 60, 0.8)';
